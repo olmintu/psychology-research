@@ -5,14 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <title>Психологическое исследование</title>
     <style>
-        :root { --primary: #3498db; --success: #27ae60; --error: #e74c3c; --bg: #f4f6f8; }
+        :root { --primary: #3498db; --success: #27ae60; --error: #e74c3c; --bg: #f4f6f8; --info-bg: #ebf5fb; --info-border: #aed6f1; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg); color: #333; margin: 0; padding: 15px; line-height: 1.5; }
         
         .container { max-width: 800px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
         
         h1 { font-size: 1.6rem; text-align: center; color: #2c3e50; margin-bottom: 10px; }
-        h2 { font-size: 1.3rem; color: #34495e; margin-top: 0; text-align: center; }
-        .subtitle { text-align: center; color: #7f8c8d; font-size: 0.9em; margin-bottom: 20px; }
+        h2 { font-size: 1.3rem; color: #34495e; margin-top: 0; text-align: center; margin-bottom: 15px; }
+        
+        /* Блок инструкции */
+        .instruction {
+            background-color: var(--info-bg);
+            border-left: 5px solid var(--primary);
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+        .instruction p { margin: 0 0 10px 0; }
+        .instruction p:last-child { margin-bottom: 0; }
+        .instruction ul { margin: 5px 0 10px 20px; padding: 0; }
+        .instruction li { margin-bottom: 3px; }
         
         /* Анимация переходов */
         .step { display: none; opacity: 0; transition: opacity 0.3s ease; }
@@ -61,6 +76,11 @@
         th { background: #f8f9fa; font-size: 0.9rem; color: #555; }
         td:first-child { text-align: left; font-weight: 500; }
         
+        /* Легенда для Мильмана */
+        .legend { display: flex; justify-content: space-around; background: #f9f9f9; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 0.85rem; }
+        .legend div { text-align: center; }
+        .legend b { display: block; font-size: 1.1em; color: var(--primary); }
+
         /* МОБИЛЬНАЯ ВЕРСИЯ */
         @media (max-width: 600px) {
             .container { padding: 15px; }
@@ -77,6 +97,8 @@
                 content: attr(data-label); display: block; font-size: 0.75em; color: #7f8c8d; margin-bottom: 4px; font-weight: 600; 
             }
             input[type="radio"] { width: 24px; height: 24px; margin: 0; }
+            .legend { flex-wrap: wrap; }
+            .legend div { width: 45%; margin-bottom: 5px; }
         }
 
         .progress-bar { height: 6px; background: #e9ecef; border-radius: 3px; margin-bottom: 20px; }
@@ -97,7 +119,10 @@
     <!-- АНКЕТА -->
     <div class="step active" id="step-form">
         <h1>Анкета участника</h1>
-        <p class="subtitle">Ваши данные полностью конфиденциальны</p>
+        <div class="instruction">
+            Здравствуйте! Вам предлагается принять участие в психологическом исследовании.<br>
+            Пожалуйста, заполните данные о себе. Вся информация будет использована <b>только в обобщенном виде</b>.
+        </div>
         
         <div class="form-group"><label>ФИО: *</label><input type="text" id="fio" placeholder="Иванов Иван Иванович" onchange="saveState()"></div>
         
@@ -149,26 +174,51 @@
         <p style="text-align:center; font-size:0.8em; margin-top:15px; color:#999">Прогресс сохраняется автоматически</p>
     </div>
 
-    <!-- ТЕСТЫ (Скрыты) -->
+    <!-- МЕТОДИКА 1: БРАТУСЬ -->
     <div class="step" id="step-bratus">
         <h2>1/3. Жизненные смыслы</h2>
-        <p class="subtitle" id="bratus-sub">Выберите 3 самых важных утверждения</p>
+        <div class="instruction">
+            <p>Перед вами список из 24 утверждений. Это перечень жизненных смыслов, на которые могут ориентироваться люди. Прочитайте, пожалуйста, внимательно весь список.</p>
+            <p>Теперь Вам предстоит сделать мягкую рейтинговую оценку представленного списка. Для этого выберите из списка <b>три утверждения</b>, которые занимают <b>1-е место</b> в системе Ваших личных жизненных смыслов, затем три утверждения, которые Вы могли бы поставить на 2-е, на 3-е и т.д. до 8-го места.</p>
+        </div>
+        
+        <p style="text-align:center; font-weight:bold; color:#2980b9; margin-bottom:10px;" id="bratus-sub">
+            Выберите 3 самых важных утверждения
+        </p>
+        
         <div id="bratus-options"></div>
         <div class="error-msg" id="bratus-error">Выберите ровно 3 пункта!</div>
         <button class="btn" onclick="nextBratusRank()">Следующий шаг</button>
     </div>
 
+    <!-- МЕТОДИКА 2: МИЛЬМАН -->
     <div class="step" id="step-milman">
         <h2>2/3. Мотивация</h2>
-        <p class="subtitle">Варианты: <b>++</b>(Да) <b>+</b>(Пожалуй) <b>=</b>(Когда как) <b>?</b>(Нет)</p>
+        <div class="instruction">
+            <p>Перед вами 14 утверждений, касающихся ваших жизненных стремлений и некоторых сторон вашего образа жизни. Просим вас высказать отношение к ним по каждому из вариантов, проставив одну из следующих оценок:</p>
+            <ul>
+                <li><b>++</b> — да, согласен</li>
+                <li><b>+</b> — пожалуй согласен</li>
+                <li><b>=</b> — когда как, согласен в некоторой степени</li>
+                <li><b>- / ?</b> — нет, не согласен / не знаю</li>
+            </ul>
+            <p>Старайтесь отвечать быстро, не задумывайтесь долго над ответами.</p>
+        </div>
+        
         <div id="milman-container"></div>
         <div class="error-msg" id="milman-error">Ответьте на вопросы, подсвеченные красным!</div>
         <button class="btn" onclick="finishMilman()">Далее</button>
     </div>
 
+    <!-- МЕТОДИКА 3: ИПЛ -->
     <div class="step" id="step-ipl">
         <h2>3/3. Инновации</h2>
-        <p class="subtitle">Оцените согласие от 1 (Нет) до 5 (Да)</p>
+        <div class="instruction">
+            <p>Вашему вниманию предлагается ряд высказываний, каждое из которых необходимо отнести к себе и решить, в какой мере оно описывает Вашу жизненную позицию.</p>
+            <p>Выбор ответа нужно делать по первому побуждению, затрачивая на каждый вопрос не более 10-15 секунд.</p>
+            <p>Варианты ответов: от <b>1 (Не согласен)</b> до <b>5 (Согласен)</b>.</p>
+        </div>
+
         <div id="ipl-container"></div>
         <div class="error-msg" id="ipl-error">Ответьте на вопросы, подсвеченные красным!</div>
         <button class="btn btn-success" onclick="finishSurvey()">Завершить</button>
@@ -199,7 +249,7 @@
 </div>
 
 <script>
-// --- ВАШ URL GOOGLE SCRIPT ---
+// --- URL СКРИПТА ---
 const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbyBH_ksIaHmQxklthf1SgxzmhxAPkqABdkTFTin1TObQJZ98DudLE_20IbqEHR-SKaqCg/exec";
 
 // ДАННЫЕ
@@ -316,7 +366,6 @@ function renderIPL() {
 }
 function saveI(i, v) { state.ipl[i] = v; document.getElementById('row_ipl_'+i).classList.remove('highlight-error'); saveState(); }
 
-// ОТПРАВКА И ФИНАЛ
 function finishSurvey() {
     if(!validateGroup('ipl', 36, 1)) return;
     state.meta.end_fmt = new Date().toLocaleString();
@@ -324,7 +373,6 @@ function finishSurvey() {
     
     switchStep('step-ipl', 'step-loading');
     
-    // Пытаемся отправить
     fetch(GOOGLE_URL, {
         method: "POST", mode: "no-cors",
         headers: { "Content-Type": "application/json" },
@@ -333,7 +381,6 @@ function finishSurvey() {
     .then(() => { showFinal(true); })
     .catch(e => { console.error(e); showFinal(false); });
     
-    // Страховка от зависания (3 сек)
     setTimeout(() => { if(document.getElementById('step-loading').style.display !== 'none') showFinal(true); }, 3000);
 }
 
@@ -347,7 +394,6 @@ function showFinal(success) {
         document.getElementById('final-title').style.color = "orange";
         document.getElementById('final-msg').innerHTML = "Не удалось сохранить в облако.<br><b>Пожалуйста, скачайте файл и отправьте его вручную!</b>";
     }
-    // Генерируем текст для копирования
     document.getElementById('result-area').value = JSON.stringify(state, null, 2);
 }
 
@@ -361,7 +407,6 @@ function copyResult() {
     let txt = document.getElementById('result-area'); txt.style.display = 'block'; txt.select(); document.execCommand('copy'); document.getElementById('copy-msg').style.display = 'block';
 }
 
-// УТИЛИТЫ
 function switchStep(f, t) { document.getElementById(f).classList.remove('active'); setTimeout(() => document.getElementById(t).classList.add('active'), 200); }
 function validateGroup(prefix, c1, c2) {
     let firstErr = null; let container = prefix==='m' ? state.milman : state.ipl;
