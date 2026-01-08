@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <title>Психологическое исследование</title>
+    <style>
+        :root { --primary: #3498db; --success: #27ae60; --error: #e74c3c; --bg: #f4f6f8; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg); color: #333; margin: 0; padding: 15px; line-height: 1.5; }
+        
+        .container { max-width: 800px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        
+        h1 { font-size: 1.6rem; text-align: center; color: #2c3e50; margin-bottom: 10px; }
+        h2 { font-size: 1.3rem; color: #34495e; margin-top: 0; text-align: center; }
+        .subtitle { text-align: center; color: #7f8c8d; font-size: 0.9em; margin-bottom: 20px; }
+        
+        /* Анимация переходов */
+        .step { display: none; opacity: 0; transition: opacity 0.3s ease; }
+        .step.active { display: block; opacity: 1; }
+        
+        /* Поля ввода */
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.9rem; color: #555; }
+        input[type="text"], input[type="number"], select { 
+            width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; 
+            font-size: 16px; box-sizing: border-box; background: #fff; appearance: none;
+        }
+        
+        /* Кнопки */
+        .btn { 
+            display: block; width: 100%; padding: 16px; margin-top: 25px;
+            background-color: var(--primary); color: white; border: none; border-radius: 10px; 
+            font-size: 17px; font-weight: 600; cursor: pointer; transition: transform 0.1s; 
+        }
+        .btn:active { transform: scale(0.98); opacity: 0.9; }
+        .btn-success { background-color: var(--success); }
+        .btn-secondary { background-color: #95a5a6; margin-top: 10px; }
+        
+        /* Карточки выбора (Братусь) */
+        .option-card { 
+            border: 2px solid #eee; padding: 12px; margin-bottom: 8px; border-radius: 10px; 
+            display: flex; align-items: center; cursor: pointer; transition: all 0.2s; 
+            background: #fff;
+        }
+        .option-card input { width: 22px; height: 22px; margin-right: 15px; flex-shrink: 0; }
+        .option-card.checked { border-color: var(--primary); background-color: #f0f9ff; }
+
+        /* Ошибки */
+        .error-msg { 
+            color: #fff; background: var(--error); padding: 12px; border-radius: 8px; 
+            margin-top: 20px; text-align: center; display: none; font-weight: bold; 
+        }
+        .highlight-error { 
+            border: 2px solid var(--error) !important; 
+            background-color: #fff5f5 !important;
+        }
+
+        /* Таблицы и Адаптивность */
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { padding: 10px; text-align: center; border-bottom: 1px solid #eee; }
+        th { background: #f8f9fa; font-size: 0.9rem; color: #555; }
+        td:first-child { text-align: left; font-weight: 500; }
+        
+        /* МОБИЛЬНАЯ ВЕРСИЯ */
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            table, thead, tbody, th, td, tr { display: block; }
+            thead tr { position: absolute; top: -9999px; left: -9999px; }
+            tr { border: 1px solid #e0e0e0; border-radius: 12px; margin-bottom: 15px; padding: 15px; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
+            td { border: none; padding: 5px 0; text-align: left; }
+            td:first-child { 
+                font-weight: 600; border-bottom: 1px solid #eee; margin-bottom: 10px; 
+                padding-bottom: 10px; text-align: center; font-size: 1.05rem; color: var(--primary); 
+            }
+            /* Радиокнопки в ряд */
+            td:not(:first-child) { display: inline-block; width: 22%; text-align: center; vertical-align: top; }
+            td:not(:first-child)::before { 
+                content: attr(data-label); display: block; font-size: 0.75em; color: #7f8c8d; margin-bottom: 4px; font-weight: 600; 
+            }
+            input[type="radio"] { width: 24px; height: 24px; margin: 0; }
+        }
+
+        .progress-bar { height: 6px; background: #e9ecef; border-radius: 3px; margin-bottom: 20px; }
+        .progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.3s; }
+        
+        /* Блок результата */
+        #result-area { width: 100%; height: 100px; margin-top: 10px; font-size: 12px; padding: 10px; border: 1px solid #ddd; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+
+    <!-- АНКЕТА -->
+    <div class="step active" id="step-form">
+        <h1>Анкета участника</h1>
+        <p class="subtitle">Ваши данные полностью конфиденциальны</p>
+        
+        <div class="form-group"><label>ФИО: *</label><input type="text" id="fio" placeholder="Иванов Иван Иванович" onchange="saveState()"></div>
+        
+        <div style="display: flex; gap: 10px;">
+            <div class="form-group" style="flex: 1;"><label>Пол: *</label>
+                <select id="gender" onchange="saveState()"><option value="">Выбрать...</option><option value="Мужской">Мужской</option><option value="Женский">Женский</option></select>
+            </div>
+            <div class="form-group" style="flex: 1;"><label>Возраст: *</label>
+                <input type="number" id="age" placeholder="18" onchange="saveState()">
+            </div>
+        </div>
+
+        <div class="form-group"><label>Семейное положение: *</label>
+            <select id="family_status" onchange="saveState()">
+                <option value="">Выбрать...</option>
+                <option value="Холост/Не замужем">Холост / Не замужем</option>
+                <option value="Женат/Замужем">Женат / Замужем</option>
+                <option value="В разводе">В разводе</option>
+            </select>
+        </div>
+        
+        <div class="form-group"><label>Есть ли дети? *</label>
+            <select id="children" onchange="saveState()"><option value="Нет">Нет</option><option value="Да">Да</option></select>
+        </div>
+
+        <div class="form-group"><label>Работаете ли Вы? *</label>
+            <select id="is_working" onchange="toggleWorkPlace(); saveState()"><option value="Нет">Нет</option><option value="Да">Да</option></select>
+        </div>
+        <div class="form-group" id="work_place_block" style="display: none;">
+            <label>Где работаете? (не обязательно)</label><input type="text" id="work_place" onchange="saveState()">
+        </div>
+
+        <div class="form-group"><label>Среднее спец. образование? *</label>
+            <select id="has_secondary_edu" onchange="saveState()"><option value="Нет">Нет</option><option value="Да">Да</option></select>
+        </div>
+
+        <div class="form-group"><label>Название ВУЗа: *</label><input type="text" id="university" onchange="saveState()"></div>
+        <div class="form-group"><label>Специальность: *</label><input type="text" id="speciality" onchange="saveState()"></div>
+        
+        <div style="display: flex; gap: 10px;">
+             <div class="form-group" style="flex: 1;"><label>Уровень: *</label>
+                <select id="edu_level" onchange="saveState()"><option value="Бакалавриат">Бакалавриат</option><option value="Магистратура">Магистратура</option><option value="Специалитет">Специалитет</option></select>
+            </div>
+             <div class="form-group" style="flex: 1;"><label>Основа: *</label>
+                <select id="edu_basis" onchange="saveState()"><option value="Бюджет">Бюджет</option><option value="Платное">Платное</option></select>
+            </div>
+        </div>
+        <div class="form-group"><label>Курс: *</label>
+            <select id="course" onchange="saveState()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select>
+        </div>
+
+        <div class="error-msg" id="form-error">Заполните все обязательные поля!</div>
+        <button class="btn" onclick="validateForm()">Далее</button>
+        <p style="text-align:center; font-size:0.8em; margin-top:15px; color:#999">Прогресс сохраняется автоматически</p>
+    </div>
+
+    <!-- БРАТУСЬ -->
+    <div class="step" id="step-bratus">
+        <h2>1/3. Жизненные смыслы</h2>
+        <p class="subtitle" id="bratus-sub">Выберите 3 самых важных утверждения</p>
+        <div id="bratus-options"></div>
+        <div class="error-msg" id="bratus-error">Выберите ровно 3 пункта!</div>
+        <button class="btn" onclick="nextBratusRank()">Следующий шаг</button>
+    </div>
+
+    <!-- МИЛЬМАН -->
+    <div class="step" id="step-milman">
+        <h2>2/3. Мотивация</h2>
+        <p class="subtitle">Варианты: <b>++</b>(Да) <b>+</b>(Пожалуй) <b>=</b>(Когда как) <b>?</b>(Нет)</p>
+        <div id="milman-container"></div>
+        <div class="error-msg" id="milman-error">Ответьте на вопросы, подсвеченные красным!</div>
+        <button class="btn" onclick="finishMilman()">Далее</button>
+    </div>
+
+    <!-- ИПЛ -->
+    <div class="step" id="step-ipl">
+        <h2>3/3. Инновации</h2>
+        <p class="subtitle">Оцените согласие от 1 (Нет) до 5 (Да)</p>
+        <div id="ipl-container"></div>
+        <div class="error-msg" id="ipl-error">Ответьте на вопросы, подсвеченные красным!</div>
+        <button class="btn btn-success" onclick="finishSurvey()">Завершить</button>
+    </div>
+
+    <!-- ФИНАЛ -->
+    <div class="step" id="step-final" style="text-align: center;">
+        <h1 style="color:var(--success)">Готово!</h1>
+        <p>Ваш результат сформирован.</p>
+        
+        <button class="btn btn-success" onclick="downloadJSON()">📥 Скачать файл результата</button>
+        <p style="font-size: 0.9em; color:#666; margin-top:5px;">(Отправьте этот файл исследователю)</p>
+
+        <div style="margin-top: 30px; border-top: 1px solid #eee; padding-top: 20px;">
+            <p>Не получается скачать файл?</p>
+            <button class="btn btn-secondary" onclick="copyResult()">📋 Скопировать текст результата</button>
+            <textarea id="result-area" readonly></textarea>
+            <p id="copy-msg" style="color:var(--success); display:none; font-weight:bold;">Скопировано! Вставьте в сообщение исследователю.</p>
+        </div>
+    </div>
+</div>
+
+<script>
+// ДАННЫЕ
+const bratus_stmts=[{id:1,t:"помогать другим людям"},{id:2,t:"быть свободным"},{id:3,t:"получать удовольствие"},{id:4,t:"совершенствоваться"},{id:5,t:"добиваться успеха"},{id:6,t:"быть с близким человеком"},{id:7,t:"передать лучшее детям"},{id:8,t:"понять себя"},{id:9,t:"делать добро"},{id:10,t:"жить"},{id:11,t:"испытывать счастье"},{id:12,t:"осуществить себя"},{id:13,t:"сделать карьеру"},{id:14,t:"чувствовать, что нужен"},{id:15,t:"жить ради семьи"},{id:16,t:"познавать Бога"},{id:17,t:"улучшать мир"},{id:18,t:"любить"},{id:19,t:"получать ощущения"},{id:20,t:"реализовать возможности"},{id:21,t:"занимать положение"},{id:22,t:"радоваться общению"},{id:23,t:"помогать родным"},{id:24,t:"понять жизнь"}];
+const milman_qs=[{q:"Принципы в жизни:",i:["Время - деньги","Главное - здоровье","Время с друзьями","Время семье","Делать добро","Место под солнцем","Приобретать знания","Открыть новое"]},{q:"Принципы на работе:",i:["Вынужденная необходимость","Не допускать конфликтов","Спокойные условия","Служебное продвижение","Завоевать авторитет","Совершенствоваться","Найти интересное","Увлечь других"]},{q:"Дела в свободное время:",i:["Домашние","Отдых","Друзья","Общественные","Дети","Учеба","Хобби","Подрабатывание"]},{q:"Место в работе занимают:",i:["Деловое общение","Личное общение","Общественная работа","Учеба","Творчество","Заработок","Ответственность","Перекуры"]},{q:"Лишний выходной потрачу на:",i:["Дом","Отдых","Развлечения","Общественная работа","Учеба","Творчество","Ответственное дело","Заработок"]},{q:"При свободном графике займусь:",i:["Обязанностями","Деловым общением","Личным общением","Общественной работой","Учебой","Творчеством","Полезной работой","Заработком"]},{q:"Темы разговоров с друзьями:",i:["Покупки/развлечения","Общие знакомые","Вокруг нас","Успех","Работа","Увлечения","Планы","Политика/книги"]},{q:"Работа дает мне:",i:["Средства","Общение","Авторитет","Встречи","Удовлетворение","Полезность","Проф. уровень","Продвижение"]},{q:"Хочу общество, где:",i:["Уютно","Рабочие темы","Уважают","Полезные связи","Новые друзья","Известные люди","Общее дело","Способности"]},{q:"Хочу людей рядом:",i:["Разные темы","Передавать опыт","Больше заработать","Авторитетные","Научат полезному","Активные","Знающие","Поддержат"]},{q:"Имею в достатке:",i:["Мат. благополучие","Развлечения","Условия жизни","Семью","Общение","Уважение","Полезность","Ценное"]},{q:"Имею в работе:",i:["Зарплату","Условия","Коллектив","Достижения","Должность","Независимость","Авторитет","Проф. уровень"]},{q:"Нравится, когда:",i:["Нет забот","Комфорт","Веселая суета","Веселое общество","Соревнование","Напряжение","Погружен в работу","Совместная работа"]},{q:"При неудаче я:",i:["Расстраиваюсь","Переключаюсь","Теряюсь","Злюсь на помеху","Спокоен","Анализирую","Виноват сам","Ищу причины"]}];
+const ipl_qs=["Знания можно получить из книг","Будущее не пугает","Смог бы заняться экстримом","Легко переключаюсь на работу","Продвижение – причина учиться","Перемены не тревожат","Человек не в ответе за экологию","Замечаю перемены на дороге","Изменения ведут к кризису","Изменения в работе вредят","Легко нахожу общий язык","Не важно место отдыха","Читаю альтернативных авторов","Много нового – мало хорошего","Трудно взяться за новое","Культура только с в/о","Сменю работу, если против морали","Большинство живет интересно","Слушаю ритм мира","Важно соблюдать правила","Недостаточно спросить спецов","Друг не изменит симпатии","Интересуюсь традициями других","Нет времени на литературу","Лучше стабильность","Трудно привыкаю к коллективу","Скептик к новому в искусстве","Время быстротечно","Радуют изменения","Не пугает новая сфера","Меняюсь только по нужде","Не слежу за политикой","Неожиданности раздражают","Меняю решения","Ориентируюсь на местности","Обращу обстоятельства в пользу"];
+
+// СОСТОЯНИЕ (Загрузка из LocalStorage)
+let saved = localStorage.getItem('survey_state');
+let state = saved ? JSON.parse(saved) : { meta: {}, bratus: {}, rank: 1, milman: {}, ipl: {}, timing: {start: Date.now(), milman_start:0, ipl_start:0} };
+
+// ВОССТАНОВЛЕНИЕ ПОЛЕЙ ПРИ ЗАГРУЗКЕ
+window.onload = function() {
+    if(state.meta.fio) {
+        for(let k in state.meta) {
+            let el = document.getElementById(k);
+            if(el) el.value = state.meta[k];
+        }
+        toggleWorkPlace();
+    }
+    // Если пользователь уже начал тест, перекидываем его
+    if(state.rank > 1 || Object.keys(state.bratus).length > 0) {
+        switchStep('step-form', 'step-bratus');
+        renderBratus();
+    }
+};
+
+function saveState() {
+    localStorage.setItem('survey_state', JSON.stringify(state));
+}
+
+function toggleWorkPlace() {
+    document.getElementById('work_place_block').style.display = (document.getElementById('is_working').value === "Да") ? 'block' : 'none';
+}
+
+function validateForm() {
+    const ids = ['fio','gender','age','family_status','children','is_working','has_secondary_edu','university','speciality','edu_level','edu_basis','course'];
+    let valid = true;
+    ids.forEach(id => {
+        let val = document.getElementById(id).value;
+        if(!val) { document.getElementById(id).style.borderColor = "var(--error)"; valid = false; }
+        else { document.getElementById(id).style.borderColor = "#ddd"; state.meta[id] = val; }
+    });
+    
+    if(!valid) { document.getElementById('form-error').style.display = 'block'; return; }
+    state.meta.work_place = document.getElementById('work_place').value;
+    state.meta.start_fmt = new Date().toLocaleString();
+    
+    saveState();
+    switchStep('step-form', 'step-bratus');
+    renderBratus();
+}
+
+function renderBratus() {
+    const c = document.getElementById('bratus-options');
+    c.innerHTML = "";
+    document.getElementById('bratus-sub').innerHTML = `Выберите <b>3</b> утверждения для <b>${state.rank}-го места</b>`;
+    document.getElementById('progress').style.width = (state.rank/8*30)+"%";
+
+    let used = [];
+    for(let k in state.bratus) used = used.concat(state.bratus[k]);
+
+    bratus_stmts.forEach(s => {
+        if(!used.includes(s.id)) {
+            let div = document.createElement('div');
+            div.className = 'option-card';
+            div.innerHTML = `<input type="checkbox" value="${s.id}"> ...${s.t}`;
+            div.onclick = (e) => {
+                if(e.target.tagName!=='INPUT') div.querySelector('input').click();
+                div.classList.toggle('checked', div.querySelector('input').checked);
+            };
+            c.appendChild(div);
+        }
+    });
+    window.scrollTo(0,0);
+}
+
+function nextBratusRank() {
+    const ch = document.querySelectorAll('#bratus-options input:checked');
+    if(ch.length !== 3) { document.getElementById('bratus-error').style.display = 'block'; return; }
+    document.getElementById('bratus-error').style.display = 'none';
+    
+    state.bratus[state.rank] = Array.from(ch).map(i => parseInt(i.value));
+    saveState();
+    
+    if(state.rank < 8) { state.rank++; renderBratus(); }
+    else { 
+        state.timing.milman_start = Date.now();
+        switchStep('step-bratus', 'step-milman'); 
+        renderMilman(); 
+    }
+}
+
+function renderMilman() {
+    const c = document.getElementById('milman-container');
+    document.getElementById('progress').style.width = "60%";
+    if(c.innerHTML) return; // Уже отрендерено
+
+    milman_qs.forEach((q, qi) => {
+        let h = `<div class="q-block"><h3>${qi+1}. ${q.q}</h3><table>`;
+        q.i.forEach((txt, ii) => {
+            let nm = `m_${qi}_${ii}`;
+            h += `<tr id="row_${nm}">
+                <td>${txt}</td>
+                <td data-label="++"><input type="radio" name="${nm}" value="3" onclick="saveM('${nm}',3)"></td>
+                <td data-label="+"><input type="radio" name="${nm}" value="2" onclick="saveM('${nm}',2)"></td>
+                <td data-label="="><input type="radio" name="${nm}" value="1" onclick="saveM('${nm}',1)"></td>
+                <td data-label="?"><input type="radio" name="${nm}" value="0" onclick="saveM('${nm}',0)"></td>
+            </tr>`;
+        });
+        c.innerHTML += h + "</table></div>";
+    });
+    // Восстанавливаем ответы
+    for(let k in state.milman) {
+        let el = document.querySelector(`input[name="m_${k}"][value="${state.milman[k]}"]`);
+        if(el) el.checked = true;
+    }
+    window.scrollTo(0,0);
+}
+
+function saveM(key, val) {
+    let k = key.replace('m_','');
+    state.milman[k] = val;
+    document.getElementById('row_'+key).classList.remove('highlight-error');
+    saveState();
+}
+
+function finishMilman() {
+    if(!validateGroup('m', 14, 8)) return;
+    
+    // Проверка на спидран (меньше 90 сек на 112 вопросов)
+    let dur = (Date.now() - state.timing.milman_start)/1000;
+    if(dur < 90) state.meta.flags = (state.meta.flags || "") + "FAST_MILMAN;";
+    
+    state.timing.ipl_start = Date.now();
+    switchStep('step-milman', 'step-ipl');
+    renderIPL();
+}
+
+function renderIPL() {
+    const c = document.getElementById('ipl-container');
+    document.getElementById('progress').style.width = "90%";
+    if(c.innerHTML) return;
+
+    let h = `<table>`;
+    ipl_qs.forEach((txt, i) => {
+        let nm = `ipl_${i}`;
+        h += `<tr id="row_${nm}">
+            <td>${i+1}. ${txt}</td>
+            ${[1,2,3,4,5].map(v => `<td data-label="${v}"><input type="radio" name="${nm}" value="${v}" onclick="saveI(${i},${v})"></td>`).join('')}
+        </tr>`;
+    });
+    c.innerHTML = h + "</table>";
+    
+    for(let k in state.ipl) {
+        let el = document.querySelector(`input[name="ipl_${k}"][value="${state.ipl[k]}"]`);
+        if(el) el.checked = true;
+    }
+    window.scrollTo(0,0);
+}
+
+function saveI(idx, val) {
+    state.ipl[idx] = val;
+    document.getElementById('row_ipl_'+idx).classList.remove('highlight-error');
+    saveState();
+}
+
+function finishSurvey() {
+    if(!validateGroup('ipl', 36, 1)) return;
+    state.meta.end_fmt = new Date().toLocaleString();
+    
+    // Чистим хранилище, тест пройден
+    localStorage.removeItem('survey_state');
+    
+    switchStep('step-ipl', 'step-final');
+    downloadJSON();
+}
+
+// ОБЩИЕ
+function switchStep(f, t) {
+    document.getElementById(f).classList.remove('active');
+    setTimeout(() => document.getElementById(t).classList.add('active'), 200);
+}
+
+function validateGroup(prefix, c1, c2) {
+    let firstErr = null;
+    let container = prefix==='m' ? state.milman : state.ipl;
+    
+    if(c2 === 1) { // IPL
+        for(let i=0; i<c1; i++) {
+            if(container[i] === undefined) {
+                let row = document.getElementById(`row_ipl_${i}`);
+                row.classList.add('highlight-error');
+                if(!firstErr) firstErr = row;
+            }
+        }
+    } else { // Milman
+        for(let q=0; q<c1; q++) {
+            for(let i=0; i<c2; i++) {
+                if(container[`${q}_${i}`] === undefined) {
+                    let row = document.getElementById(`row_m_${q}_${i}`);
+                    row.classList.add('highlight-error');
+                    if(!firstErr) firstErr = row;
+                }
+            }
+        }
+    }
+    
+    if(firstErr) {
+        firstErr.scrollIntoView({behavior:"smooth", block:"center"});
+        document.getElementById(prefix==='m'?'milman-error':'ipl-error').style.display='block';
+        return false;
+    }
+    return true;
+}
+
+function downloadJSON() {
+    const fn = `Res_${state.meta.fio.replace(/[^а-яА-Яa-zA-Z0-9]/g,'_')}.json`;
+    const txt = JSON.stringify(state, null, 2);
+    const blob = new Blob([txt], {type: "application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = fn;
+    document.body.appendChild(a); a.click(); a.remove();
+    
+    // Заполняем текстовое поле
+    document.getElementById('result-area').value = txt;
+}
+
+function copyResult() {
+    let txt = document.getElementById('result-area');
+    txt.style.display = 'block';
+    txt.select();
+    document.execCommand('copy');
+    document.getElementById('copy-msg').style.display = 'block';
+}
+</script>
+</body>
+</html>
