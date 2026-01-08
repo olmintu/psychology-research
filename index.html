@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <title>Психологическое исследование</title>
     <style>
-        :root { --primary: #3498db; --success: #27ae60; --error: #e74c3c; --bg: #f4f6f8; --info-bg: #ebf5fb; --info-border: #aed6f1; }
+        :root { --primary: #3498db; --success: #27ae60; --error: #e74c3c; --bg: #f4f6f8; --info-bg: #ebf5fb; --gray: #95a5a6; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg); color: #333; margin: 0; padding: 15px; line-height: 1.5; }
         
         .container { max-width: 800px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
@@ -13,100 +13,62 @@
         h1 { font-size: 1.6rem; text-align: center; color: #2c3e50; margin-bottom: 10px; }
         h2 { font-size: 1.3rem; color: #34495e; margin-top: 0; text-align: center; margin-bottom: 15px; }
         
-        /* Блок инструкции */
-        .instruction {
-            background-color: var(--info-bg);
-            border-left: 5px solid var(--primary);
-            padding: 15px;
-            border-radius: 4px;
-            margin-bottom: 25px;
-            font-size: 0.95rem;
-            color: #2c3e50;
-            line-height: 1.6;
-        }
+        /* Инструкции */
+        .instruction { background-color: var(--info-bg); border-left: 5px solid var(--primary); padding: 15px; border-radius: 4px; margin-bottom: 25px; font-size: 0.95rem; color: #2c3e50; line-height: 1.6; }
         .instruction p { margin: 0 0 10px 0; }
-        .instruction p:last-child { margin-bottom: 0; }
         .instruction ul { margin: 5px 0 10px 20px; padding: 0; }
-        .instruction li { margin-bottom: 3px; }
         
-        /* Анимация переходов */
+        /* Анимация */
         .step { display: none; opacity: 0; transition: opacity 0.3s ease; }
         .step.active { display: block; opacity: 1; }
         
-        /* Поля ввода */
+        /* Формы */
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.9rem; color: #555; }
-        input[type="text"], input[type="number"], select { 
-            width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; 
-            font-size: 16px; box-sizing: border-box; background: #fff; appearance: none;
-        }
+        input[type="text"], input[type="number"], select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; background: #fff; appearance: none; }
         
         /* Кнопки */
-        .btn { 
-            display: block; width: 100%; padding: 16px; margin-top: 25px;
-            background-color: var(--primary); color: white; border: none; border-radius: 10px; 
-            font-size: 17px; font-weight: 600; cursor: pointer; transition: transform 0.1s; 
-        }
+        .btn-container { display: flex; gap: 15px; margin-top: 25px; }
+        .btn { flex: 1; padding: 16px; border: none; border-radius: 10px; font-size: 17px; font-weight: 600; cursor: pointer; transition: transform 0.1s; color: white; }
         .btn:active { transform: scale(0.98); opacity: 0.9; }
+        .btn-next { background-color: var(--primary); }
+        .btn-back { background-color: var(--gray); }
         .btn-success { background-color: var(--success); }
-        .btn-secondary { background-color: #95a5a6; margin-top: 10px; }
         
-        /* Карточки выбора (Братусь) */
-        .option-card { 
-            border: 2px solid #eee; padding: 12px; margin-bottom: 8px; border-radius: 10px; 
-            display: flex; align-items: center; cursor: pointer; transition: all 0.2s; 
-            background: #fff;
-        }
+        /* Карточки Братуся */
+        .option-card { border: 2px solid #eee; padding: 12px; margin-bottom: 8px; border-radius: 10px; display: flex; align-items: center; cursor: pointer; transition: all 0.2s; background: #fff; }
         .option-card input { width: 22px; height: 22px; margin-right: 15px; flex-shrink: 0; }
         .option-card.checked { border-color: var(--primary); background-color: #f0f9ff; }
 
         /* Ошибки */
-        .error-msg { 
-            color: #fff; background: var(--error); padding: 12px; border-radius: 8px; 
-            margin-top: 20px; text-align: center; display: none; font-weight: bold; 
-        }
-        .highlight-error { 
-            border: 2px solid var(--error) !important; 
-            background-color: #fff5f5 !important;
-        }
+        .error-msg { color: #fff; background: var(--error); padding: 12px; border-radius: 8px; margin-top: 20px; text-align: center; display: none; font-weight: bold; }
+        .highlight-error { border: 2px solid var(--error) !important; background-color: #fff5f5 !important; }
 
-        /* Таблицы и Адаптивность */
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        /* Таблицы */
+        table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
         th, td { padding: 10px; text-align: center; border-bottom: 1px solid #eee; }
-        th { background: #f8f9fa; font-size: 0.9rem; color: #555; }
+        
+        /* Липкий заголовок таблицы */
+        th { 
+            background: #f8f9fa; font-size: 0.85rem; color: #555; vertical-align: middle; 
+            position: sticky; top: 0; z-index: 10; /* Липучка */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
         td:first-child { text-align: left; font-weight: 500; }
         
-        /* Легенда для Мильмана */
-        .legend { display: flex; justify-content: space-around; background: #f9f9f9; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 0.85rem; }
-        .legend div { text-align: center; }
-        .legend b { display: block; font-size: 1.1em; color: var(--primary); }
-
-        /* МОБИЛЬНАЯ ВЕРСИЯ */
+        /* Мобильная версия */
         @media (max-width: 600px) {
             .container { padding: 15px; }
-            table, thead, tbody, th, td, tr { display: block; }
-            thead tr { position: absolute; top: -9999px; left: -9999px; }
-            tr { border: 1px solid #e0e0e0; border-radius: 12px; margin-bottom: 15px; padding: 15px; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.03); }
-            td { border: none; padding: 5px 0; text-align: left; }
-            td:first-child { 
-                font-weight: 600; border-bottom: 1px solid #eee; margin-bottom: 10px; 
-                padding-bottom: 10px; text-align: center; font-size: 1.05rem; color: var(--primary); 
-            }
-            td:not(:first-child) { display: inline-block; width: 22%; text-align: center; vertical-align: top; }
-            td:not(:first-child)::before { 
-                content: attr(data-label); display: block; font-size: 0.75em; color: #7f8c8d; margin-bottom: 4px; font-weight: 600; 
-            }
-            input[type="radio"] { width: 24px; height: 24px; margin: 0; }
-            .legend { flex-wrap: wrap; }
-            .legend div { width: 45%; margin-bottom: 5px; }
+            /* В Мильмане на мобильном оставляем таблицу, но уменьшаем шрифт, чтобы влезли заголовки */
+            th { font-size: 0.7rem; padding: 5px; word-wrap: break-word; }
+            td { padding: 8px 2px; }
+            td:first-child { font-size: 0.9rem; }
+            input[type="radio"] { width: 20px; height: 20px; margin: 0; }
         }
 
         .progress-bar { height: 6px; background: #e9ecef; border-radius: 3px; margin-bottom: 20px; }
         .progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.3s; }
-        
         #result-area { width: 100%; height: 100px; margin-top: 10px; font-size: 12px; padding: 10px; border: 1px solid #ddd; display: none; }
-        
-        /* Спиннер загрузки */
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
@@ -121,44 +83,20 @@
         <h1>Анкета участника</h1>
         <div class="instruction">
             Здравствуйте! Вам предлагается принять участие в психологическом исследовании.<br>
-            Пожалуйста, заполните данные о себе. Вся информация будет использована <b>только в обобщенном виде</b>.
+            Вся информация будет использована <b>только в обобщенном виде</b>.
         </div>
         
         <div class="form-group"><label>ФИО: *</label><input type="text" id="fio" placeholder="Иванов Иван Иванович" onchange="saveState()"></div>
-        
         <div style="display: flex; gap: 10px;">
-            <div class="form-group" style="flex: 1;"><label>Пол: *</label>
-                <select id="gender" onchange="saveState()"><option value="">Выбрать...</option><option value="Мужской">Мужской</option><option value="Женский">Женский</option></select>
-            </div>
-            <div class="form-group" style="flex: 1;"><label>Возраст: *</label>
-                <input type="number" id="age" placeholder="18" onchange="saveState()">
-            </div>
+            <div class="form-group" style="flex: 1;"><label>Пол: *</label><select id="gender" onchange="saveState()"><option value="">Выбрать...</option><option value="Мужской">Мужской</option><option value="Женский">Женский</option></select></div>
+            <div class="form-group" style="flex: 1;"><label>Возраст: *</label><input type="number" id="age" placeholder="18" onchange="saveState()"></div>
         </div>
-
-        <div class="form-group"><label>Семейное положение: *</label>
-            <select id="family_status" onchange="saveState()"><option value="">Выбрать...</option><option value="Холост/Не замужем">Холост / Не замужем</option><option value="Женат/Замужем">Женат / Замужем</option><option value="В разводе">В разводе</option></select>
-        </div>
-        
-        <div class="form-group"><label>Есть ли дети? *</label>
-            <select id="children" onchange="saveState()"><option value="Нет">Нет</option><option value="Да">Да</option></select>
-        </div>
-
-        <div class="form-group"><label>Работаете ли Вы? *</label>
-            <select id="is_working" onchange="toggleWorkPlace(); saveState()"><option value="Нет">Нет</option><option value="Да">Да</option></select>
-        </div>
-        <div class="form-group" id="work_place_block" style="display: none;">
-            <label>Где работаете? (не обязательно)</label><input type="text" id="work_place" onchange="saveState()">
-        </div>
-
-        <div class="form-group"><label>Имеете ли среднее спец. образование? *</label>
-            <select id="has_secondary_edu" onchange="saveState()"><option value="Нет">Нет</option><option value="Да">Да</option></select>
-        </div>
-
-        <div class="form-group">
-            <label>Ваш статус обучения: *</label>
-            <select id="edu_status" onchange="toggleEduBlock(); saveState()"><option value="">Выбрать...</option><option value="Учусь">Студент (учусь сейчас)</option><option value="Закончил">Выпускник (уже закончил)</option><option value="Нет">Не учился в ВУЗе</option></select>
-        </div>
-
+        <div class="form-group"><label>Семейное положение: *</label><select id="family_status" onchange="saveState()"><option value="">Выбрать...</option><option value="Холост/Не замужем">Холост / Не замужем</option><option value="Женат/Замужем">Женат / Замужем</option><option value="В разводе">В разводе</option></select></div>
+        <div class="form-group"><label>Есть ли дети? *</label><select id="children" onchange="saveState()"><option value="Нет">Нет</option><option value="Да">Да</option></select></div>
+        <div class="form-group"><label>Работаете ли Вы? *</label><select id="is_working" onchange="toggleWorkPlace(); saveState()"><option value="Нет">Нет</option><option value="Да">Да</option></select></div>
+        <div class="form-group" id="work_place_block" style="display: none;"><label>Где работаете? (не обязательно)</label><input type="text" id="work_place" onchange="saveState()"></div>
+        <div class="form-group"><label>Имеете ли среднее спец. образование? *</label><select id="has_secondary_edu" onchange="saveState()"><option value="Нет">Нет</option><option value="Да">Да</option></select></div>
+        <div class="form-group"><label>Ваш статус обучения: *</label><select id="edu_status" onchange="toggleEduBlock(); saveState()"><option value="">Выбрать...</option><option value="Учусь">Студент (учусь сейчас)</option><option value="Закончил">Выпускник (уже закончил)</option><option value="Нет">Не учился в ВУЗе</option></select></div>
         <div id="edu_block" style="display: none; border-left: 3px solid #3498db; padding-left: 15px; margin-left: 5px;">
             <div class="form-group"><label>Название ВУЗа: *</label><input type="text" id="university" onchange="saveState()"></div>
             <div class="form-group"><label>Специальность: *</label><input type="text" id="speciality" onchange="saveState()"></div>
@@ -170,7 +108,9 @@
         </div>
 
         <div class="error-msg" id="form-error">Заполните все обязательные поля!</div>
-        <button class="btn" onclick="validateForm()">Далее</button>
+        <div class="btn-container">
+            <button class="btn btn-next" onclick="validateForm()">Далее</button>
+        </div>
         <p style="text-align:center; font-size:0.8em; margin-top:15px; color:#999">Прогресс сохраняется автоматически</p>
     </div>
 
@@ -178,8 +118,8 @@
     <div class="step" id="step-bratus">
         <h2>1/3. Жизненные смыслы</h2>
         <div class="instruction">
-            <p>Перед вами список из 24 утверждений. Это перечень жизненных смыслов, на которые могут ориентироваться люди. Прочитайте, пожалуйста, внимательно весь список.</p>
-            <p>Теперь Вам предстоит сделать мягкую рейтинговую оценку представленного списка. Для этого выберите из списка <b>три утверждения</b>, которые занимают <b>1-е место</b> в системе Ваших личных жизненных смыслов, затем три утверждения, которые Вы могли бы поставить на 2-е, на 3-е и т.д. до 8-го места.</p>
+            <p>Перед вами список из 24 утверждений. Это перечень жизненных смыслов, на которые могут ориентироваться люди.</p>
+            <p>Вам предстоит сделать рейтинговую оценку. Выберите из списка <b>три утверждения</b>, которые занимают <b>1-е место</b> в системе Ваших ценностей, затем три для 2-го места и т.д. до 8-го места.</p>
         </div>
         
         <p style="text-align:center; font-weight:bold; color:#2980b9; margin-bottom:10px;" id="bratus-sub">
@@ -188,57 +128,65 @@
         
         <div id="bratus-options"></div>
         <div class="error-msg" id="bratus-error">Выберите ровно 3 пункта!</div>
-        <button class="btn" onclick="nextBratusRank()">Следующий шаг</button>
+        
+        <div class="btn-container">
+            <button class="btn btn-back" onclick="prevBratusRank()">Назад</button>
+            <button class="btn btn-next" onclick="nextBratusRank()">Далее</button>
+        </div>
     </div>
 
     <!-- МЕТОДИКА 2: МИЛЬМАН -->
     <div class="step" id="step-milman">
         <h2>2/3. Мотивация</h2>
         <div class="instruction">
-            <p>Перед вами 14 утверждений, касающихся ваших жизненных стремлений и некоторых сторон вашего образа жизни. Просим вас высказать отношение к ним по каждому из вариантов, проставив одну из следующих оценок:</p>
+            <p>Перед вами утверждения, касающиеся ваших жизненных стремлений. Выскажите отношение к ним по каждому пункту:</p>
             <ul>
                 <li><b>++</b> — да, согласен</li>
                 <li><b>+</b> — пожалуй согласен</li>
                 <li><b>=</b> — когда как, согласен в некоторой степени</li>
                 <li><b>- / ?</b> — нет, не согласен / не знаю</li>
             </ul>
-            <p>Старайтесь отвечать быстро, не задумывайтесь долго над ответами.</p>
         </div>
         
         <div id="milman-container"></div>
         <div class="error-msg" id="milman-error">Ответьте на вопросы, подсвеченные красным!</div>
-        <button class="btn" onclick="finishMilman()">Далее</button>
+        
+        <div class="btn-container">
+            <button class="btn btn-back" onclick="prevMilman()">Назад</button>
+            <button class="btn btn-next" onclick="finishMilman()">Далее</button>
+        </div>
     </div>
 
     <!-- МЕТОДИКА 3: ИПЛ -->
     <div class="step" id="step-ipl">
         <h2>3/3. Инновации</h2>
         <div class="instruction">
-            <p>Вашему вниманию предлагается ряд высказываний, каждое из которых необходимо отнести к себе и решить, в какой мере оно описывает Вашу жизненную позицию.</p>
-            <p>Выбор ответа нужно делать по первому побуждению, затрачивая на каждый вопрос не более 10-15 секунд.</p>
-            <p>Варианты ответов: от <b>1 (Не согласен)</b> до <b>5 (Согласен)</b>.</p>
+            <p>Оцените, в какой мере данные высказывания описывают Вашу жизненную позицию.</p>
+            <p>Старайтесь отвечать по первому побуждению (10-15 сек на вопрос).</p>
+            <p>Шкала: от <b>1 (Не согласен)</b> до <b>5 (Согласен)</b>.</p>
         </div>
 
         <div id="ipl-container"></div>
         <div class="error-msg" id="ipl-error">Ответьте на вопросы, подсвеченные красным!</div>
-        <button class="btn btn-success" onclick="finishSurvey()">Завершить</button>
+        
+        <div class="btn-container">
+            <button class="btn btn-back" onclick="prevIPL()">Назад</button>
+            <button class="btn btn-success" onclick="finishSurvey()">Завершить</button>
+        </div>
     </div>
 
-    <!-- ЗАГРУЗКА -->
+    <!-- ЗАГРУЗКА И ФИНАЛ -->
     <div class="step" id="step-loading" style="text-align:center; padding: 40px 0;">
         <h2 style="color:var(--primary)">Сохранение данных...</h2>
         <div class="spinner"></div>
         <p>Пожалуйста, не закрывайте страницу</p>
     </div>
 
-    <!-- ФИНАЛ -->
     <div class="step" id="step-final" style="text-align: center;">
         <h1 id="final-title" style="color:var(--success)">Готово!</h1>
         <p id="final-msg">Данные успешно отправлены в базу.</p>
         <p style="color:#666; font-size:0.9em">Рекомендуем сохранить копию файла для себя:</p>
-        
-        <button class="btn btn-secondary" onclick="downloadJSON()">📥 Скачать файл (Копия)</button>
-        
+        <button class="btn btn-secondary" style="margin-top:10px" onclick="downloadJSON()">📥 Скачать файл (Копия)</button>
         <div style="margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px;">
             <p style="font-size: 0.9em;">Или скопируйте текст:</p>
             <button class="btn btn-secondary" style="margin-top:5px; padding:10px;" onclick="copyResult()">📋 Скопировать</button>
@@ -249,7 +197,7 @@
 </div>
 
 <script>
-// --- URL СКРИПТА ---
+// --- URL ВАШЕГО СКРИПТА ---
 const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbyBH_ksIaHmQxklthf1SgxzmhxAPkqABdkTFTin1TObQJZ98DudLE_20IbqEHR-SKaqCg/exec";
 
 // ДАННЫЕ
@@ -262,12 +210,8 @@ let state = saved ? JSON.parse(saved) : { meta: {}, bratus: {}, rank: 1, milman:
 
 window.onload = function() {
     if(state.meta.fio) {
-        for(let k in state.meta) {
-            let el = document.getElementById(k);
-            if(el) el.value = state.meta[k];
-        }
-        toggleWorkPlace();
-        toggleEduBlock();
+        for(let k in state.meta) { let el = document.getElementById(k); if(el) el.value = state.meta[k]; }
+        toggleWorkPlace(); toggleEduBlock();
     }
     if(state.rank > 1 || Object.keys(state.bratus).length > 0) { switchStep('step-form', 'step-bratus'); renderBratus(); }
 };
@@ -280,18 +224,17 @@ function toggleEduBlock() {
     document.getElementById('course_block').style.display = (status==="Учусь")?'block':'none';
 }
 
+// НАВИГАЦИЯ
+function switchStep(f, t) { document.getElementById(f).classList.remove('active'); setTimeout(() => document.getElementById(t).classList.add('active'), 200); window.scrollTo(0,0); }
+
+// ФОРМА
 function validateForm() {
     let ids = ['fio','gender','age','family_status','children','is_working','has_secondary_edu','edu_status'];
     const status = document.getElementById('edu_status').value;
     if(status === 'Учусь') ids = ids.concat(['university','speciality','edu_level','edu_basis','course']);
     else if(status === 'Закончил') ids = ids.concat(['university','speciality','edu_level','edu_basis']);
-    
     let valid = true;
-    ids.forEach(id => {
-        let el = document.getElementById(id);
-        if(!el.value) { el.style.borderColor = "var(--error)"; valid = false; }
-        else { el.style.borderColor = "#ddd"; state.meta[id] = el.value; }
-    });
+    ids.forEach(id => { let el = document.getElementById(id); if(!el.value) { el.style.borderColor = "var(--error)"; valid = false; } else { el.style.borderColor = "#ddd"; state.meta[id] = el.value; } });
     if(!valid) { document.getElementById('form-error').style.display = 'block'; return; }
     state.meta.work_place = document.getElementById('work_place').value;
     state.meta.start_fmt = new Date().toLocaleString();
@@ -300,38 +243,44 @@ function validateForm() {
     renderBratus();
 }
 
+// БРАТУСЬ
 function renderBratus() {
-    const c = document.getElementById('bratus-options');
-    c.innerHTML = "";
+    const c = document.getElementById('bratus-options'); c.innerHTML = "";
     document.getElementById('bratus-sub').innerHTML = `Выберите <b>3</b> утверждения для <b>${state.rank}-го места</b>`;
     document.getElementById('progress').style.width = (state.rank/8*30)+"%";
-    let used = []; for(let k in state.bratus) used = used.concat(state.bratus[k]);
+    let used = []; for(let k in state.bratus) if(parseInt(k) !== state.rank) used = used.concat(state.bratus[k]);
     bratus_stmts.forEach(s => {
         if(!used.includes(s.id)) {
             let div = document.createElement('div'); div.className = 'option-card'; div.innerHTML = `<input type="checkbox" value="${s.id}"> ...${s.t}`;
+            // Восстановление галочек если вернулись назад
+            if(state.bratus[state.rank] && state.bratus[state.rank].includes(s.id)) { div.classList.add('checked'); div.querySelector('input').checked = true; }
             div.onclick = (e) => { if(e.target.tagName!=='INPUT') div.querySelector('input').click(); div.classList.toggle('checked', div.querySelector('input').checked); };
             c.appendChild(div);
         }
     });
-    window.scrollTo(0,0);
 }
-
 function nextBratusRank() {
     const ch = document.querySelectorAll('#bratus-options input:checked');
     if(ch.length !== 3) { document.getElementById('bratus-error').style.display = 'block'; return; }
     document.getElementById('bratus-error').style.display = 'none';
     state.bratus[state.rank] = Array.from(ch).map(i => parseInt(i.value));
     saveState();
-    if(state.rank < 8) { state.rank++; renderBratus(); }
+    if(state.rank < 8) { state.rank++; renderBratus(); window.scrollTo(0,0); }
     else { state.timing.milman_start = Date.now(); switchStep('step-bratus', 'step-milman'); renderMilman(); }
 }
+function prevBratusRank() {
+    if(state.rank > 1) { state.rank--; renderBratus(); window.scrollTo(0,0); }
+    else { switchStep('step-bratus', 'step-form'); }
+}
 
+// МИЛЬМАН
 function renderMilman() {
     const c = document.getElementById('milman-container');
     document.getElementById('progress').style.width = "60%";
     if(c.innerHTML) return; 
     milman_qs.forEach((q, qi) => {
         let h = `<div class="q-block"><h3>${qi+1}. ${q.q}</h3><table>`;
+        h += `<tr><th style="text-align:left">Утверждение</th><th>++<br>(Да)</th><th>+<br>(Пожалуй)</th><th>=<br>(Когда как)</th><th>- / ?<br>(Нет)</th></tr>`;
         q.i.forEach((txt, ii) => {
             let nm = `m_${qi}_${ii}`;
             h += `<tr id="row_${nm}"><td>${txt}</td><td data-label="++"><input type="radio" name="${nm}" value="3" onclick="saveM('${nm}',3)"></td><td data-label="+"><input type="radio" name="${nm}" value="2" onclick="saveM('${nm}',2)"></td><td data-label="="><input type="radio" name="${nm}" value="1" onclick="saveM('${nm}',1)"></td><td data-label="?"><input type="radio" name="${nm}" value="0" onclick="saveM('${nm}',0)"></td></tr>`;
@@ -339,10 +288,8 @@ function renderMilman() {
         c.innerHTML += h + "</table></div>";
     });
     for(let k in state.milman) { let el = document.querySelector(`input[name="m_${k}"][value="${state.milman[k]}"]`); if(el) el.checked = true; }
-    window.scrollTo(0,0);
 }
 function saveM(k, v) { state.milman[k.replace('m_','')] = v; document.getElementById('row_'+k).classList.remove('highlight-error'); saveState(); }
-
 function finishMilman() {
     if(!validateGroup('m', 14, 8)) return;
     if((Date.now() - state.timing.milman_start)/1000 < 90) state.meta.flags = (state.meta.flags || "") + "FAST_MILMAN;";
@@ -350,64 +297,42 @@ function finishMilman() {
     switchStep('step-milman', 'step-ipl');
     renderIPL();
 }
+function prevMilman() { switchStep('step-milman', 'step-bratus'); state.rank=8; renderBratus(); }
 
+// ИПЛ
 function renderIPL() {
     const c = document.getElementById('ipl-container');
     document.getElementById('progress').style.width = "90%";
     if(c.innerHTML) return;
-    let h = `<table>`;
+    let h = `<table><tr><th style="text-align:left">Утверждение</th><th>1<br>(Нет)</th><th>2</th><th>3</th><th>4</th><th>5<br>(Да)</th></tr>`;
     ipl_qs.forEach((txt, i) => {
         let nm = `ipl_${i}`;
         h += `<tr id="row_${nm}"><td>${i+1}. ${txt}</td>${[1,2,3,4,5].map(v => `<td data-label="${v}"><input type="radio" name="${nm}" value="${v}" onclick="saveI(${i},${v})"></td>`).join('')}</tr>`;
     });
     c.innerHTML = h + "</table>";
     for(let k in state.ipl) { let el = document.querySelector(`input[name="ipl_${k}"][value="${state.ipl[k]}"]`); if(el) el.checked = true; }
-    window.scrollTo(0,0);
 }
 function saveI(i, v) { state.ipl[i] = v; document.getElementById('row_ipl_'+i).classList.remove('highlight-error'); saveState(); }
-
 function finishSurvey() {
     if(!validateGroup('ipl', 36, 1)) return;
     state.meta.end_fmt = new Date().toLocaleString();
     localStorage.removeItem('survey_state');
-    
     switchStep('step-ipl', 'step-loading');
-    
-    fetch(GOOGLE_URL, {
-        method: "POST", mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(state)
-    })
-    .then(() => { showFinal(true); })
-    .catch(e => { console.error(e); showFinal(false); });
-    
+    fetch(GOOGLE_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify(state) })
+    .then(() => { showFinal(true); }).catch(e => { console.error(e); showFinal(false); });
     setTimeout(() => { if(document.getElementById('step-loading').style.display !== 'none') showFinal(true); }, 3000);
 }
+function prevIPL() { switchStep('step-ipl', 'step-milman'); }
 
+// ФИНАЛ
 function showFinal(success) {
     switchStep('step-loading', 'step-final');
-    if(success) {
-        document.getElementById('final-title').innerText = "Готово!";
-        document.getElementById('final-msg').innerHTML = "Данные успешно сохранены в облаке.<br>Вы можете закрыть страницу.";
-    } else {
-        document.getElementById('final-title').innerText = "Внимание!";
-        document.getElementById('final-title').style.color = "orange";
-        document.getElementById('final-msg').innerHTML = "Не удалось сохранить в облако.<br><b>Пожалуйста, скачайте файл и отправьте его вручную!</b>";
-    }
+    if(success) { document.getElementById('final-title').innerText = "Готово!"; document.getElementById('final-msg').innerHTML = "Данные успешно сохранены в облаке.<br>Вы можете закрыть страницу."; } 
+    else { document.getElementById('final-title').innerText = "Внимание!"; document.getElementById('final-title').style.color = "orange"; document.getElementById('final-msg').innerHTML = "Не удалось сохранить в облако.<br><b>Пожалуйста, скачайте файл и отправьте его вручную!</b>"; }
     document.getElementById('result-area').value = JSON.stringify(state, null, 2);
 }
-
-function downloadJSON() {
-    const fn = `Res_${state.meta.fio.replace(/[^а-яА-Яa-zA-Z0-9]/g,'_')}.json`;
-    const blob = new Blob([JSON.stringify(state, null, 2)], {type: "application/json"});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = fn; document.body.appendChild(a); a.click(); a.remove();
-}
-function copyResult() {
-    let txt = document.getElementById('result-area'); txt.style.display = 'block'; txt.select(); document.execCommand('copy'); document.getElementById('copy-msg').style.display = 'block';
-}
-
-function switchStep(f, t) { document.getElementById(f).classList.remove('active'); setTimeout(() => document.getElementById(t).classList.add('active'), 200); }
+function downloadJSON() { const fn = `Res_${state.meta.fio.replace(/[^а-яА-Яa-zA-Z0-9]/g,'_')}.json`; const blob = new Blob([JSON.stringify(state, null, 2)], {type: "application/json"}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = fn; document.body.appendChild(a); a.click(); a.remove(); }
+function copyResult() { let txt = document.getElementById('result-area'); txt.style.display = 'block'; txt.select(); document.execCommand('copy'); document.getElementById('copy-msg').style.display = 'block'; }
 function validateGroup(prefix, c1, c2) {
     let firstErr = null; let container = prefix==='m' ? state.milman : state.ipl;
     if(c2 === 1) { for(let i=0; i<c1; i++) { if(container[i] === undefined) { let row = document.getElementById(`row_ipl_${i}`); row.classList.add('highlight-error'); if(!firstErr) firstErr = row; } } } 
