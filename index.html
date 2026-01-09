@@ -55,10 +55,11 @@
         
         /* Результаты */
         .res-block { background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .score-badge { display: inline-block; padding: 5px 10px; border-radius: 15px; font-weight: bold; font-size: 0.9em; }
+        .score-badge { display: inline-block; padding: 5px 10px; border-radius: 15px; font-weight: bold; font-size: 0.9em; margin-bottom: 5px; }
         .bg-green { background: #d4edda; color: #155724; }
         .bg-red { background: #f8d7da; color: #721c24; }
         .bg-blue { background: #d1ecf1; color: #0c5460; }
+        .bg-yellow { background: #fff3cd; color: #856404; }
         canvas { max-height: 300px; margin-top: 15px; }
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -77,6 +78,9 @@
             td:not(:first-child)::before { content: attr(data-label); display: block; font-size: 0.7em; color: #888; margin-bottom: 5px; }
             input[type="radio"] { width: 24px; height: 24px; margin: 0; }
         }
+        
+        .progress-bar { height: 6px; background: #e9ecef; border-radius: 3px; margin-bottom: 20px; }
+        .progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.3s; }
     </style>
 </head>
 <body>
@@ -93,10 +97,10 @@
         </div>
         
         <div class="anon-switch">
-            <input type="checkbox" id="anon_mode" onchange="toggleAnon()">
+            <input type="checkbox" id="anon_mode" onchange="toggleAnon(); saveStateToLocal();">
             <div>
                 <label for="anon_mode" style="margin:0; cursor:pointer;"><b>Пройти опрос анонимно</b></label>
-                <div class="anon-warning" id="anon_warning" style="display:none">
+                <div class="anon-warning" id="anon_warning">
                     Сведения об участнике помогают понять, для каких групп людей полученные результаты характерны в большей степени. 
                     Отказ от их указания при анонимном прохождении может уменьшить точность и обобщаемость выводов исследования.
                 </div>
@@ -106,24 +110,24 @@
         <div class="form-group"><label>Ваше имя (или псевдоним): <span class="req">*</span></label><input type="text" id="fio" placeholder="Иванов Иван" onchange="checkDevMode(this.value)"></div>
         
         <div style="display: flex; gap: 10px;">
-            <div class="form-group" style="flex: 1;"><label>Пол: <span class="req">*</span></label><select id="gender"><option value="">Выбрать...</option><option value="Мужской">Мужской</option><option value="Женский">Женский</option></select></div>
-            <div class="form-group" style="flex: 1;"><label>Возраст: <span class="req">*</span></label><input type="number" id="age" placeholder="18"></div>
+            <div class="form-group" style="flex: 1;"><label>Пол: <span class="req">*</span></label><select id="gender" onchange="saveStateToLocal()"><option value="">Выбрать...</option><option value="Мужской">Мужской</option><option value="Женский">Женский</option></select></div>
+            <div class="form-group" style="flex: 1;"><label>Возраст: <span class="req">*</span></label><input type="number" id="age" placeholder="18" onchange="saveStateToLocal()"></div>
         </div>
-        <div class="form-group"><label>Семейное положение: <span class="req">*</span></label><select id="family_status"><option value="">Выбрать...</option><option value="Холост/Не замужем">Холост / Не замужем</option><option value="Женат/Замужем">Женат / Замужем</option><option value="В разводе">В разводе</option></select></div>
-        <div class="form-group"><label>Есть ли дети? <span class="req">*</span></label><select id="children"><option value="Нет">Нет</option><option value="Да">Да</option></select></div>
-        <div class="form-group"><label>Работаете ли Вы? <span class="req">*</span></label><select id="is_working" onchange="toggleWorkPlace()"><option value="Нет">Нет</option><option value="Да">Да</option></select></div>
-        <div class="form-group" id="work_place_block" style="display: none;"><label>Где работаете? (не обязательно)</label><input type="text" id="work_place"></div>
-        <div class="form-group"><label>Среднее спец. образование? <span class="req">*</span></label><select id="has_secondary_edu"><option value="Нет">Нет</option><option value="Да">Да</option></select></div>
+        <div class="form-group"><label>Семейное положение: <span class="req">*</span></label><select id="family_status" onchange="saveStateToLocal()"><option value="">Выбрать...</option><option value="Холост/Не замужем">Холост / Не замужем</option><option value="Женат/Замужем">Женат / Замужем</option><option value="В разводе">В разводе</option></select></div>
+        <div class="form-group"><label>Есть ли дети? <span class="req">*</span></label><select id="children" onchange="saveStateToLocal()"><option value="">Нет</option><option value="Да">Да</option></select></div>
+        <div class="form-group"><label>Работаете ли Вы? <span class="req">*</span></label><select id="is_working" onchange="toggleWorkPlace(); saveStateToLocal()"><option value="Нет">Нет</option><option value="Да">Да</option></select></div>
+        <div class="form-group" id="work_place_block" style="display: none;"><label>Где работаете? (не обязательно)</label><input type="text" id="work_place" onchange="saveStateToLocal()"></div>
+        <div class="form-group"><label>Среднее спец. образование? <span class="req">*</span></label><select id="has_secondary_edu" onchange="saveStateToLocal()"><option value="Нет">Нет</option><option value="Да">Да</option></select></div>
         
-        <div class="form-group"><label>Ваш статус обучения: <span class="req">*</span></label><select id="edu_status" onchange="toggleEduBlock()"><option value="">Выбрать...</option><option value="Учусь">Студент (учусь сейчас)</option><option value="Закончил">Выпускник (уже закончил)</option><option value="Нет">Не учился в ВУЗе</option></select></div>
+        <div class="form-group"><label>Ваш статус обучения: <span class="req">*</span></label><select id="edu_status" onchange="toggleEduBlock(); saveStateToLocal()"><option value="">Выбрать...</option><option value="Учусь">Студент (учусь сейчас)</option><option value="Закончил">Выпускник (уже закончил)</option><option value="Нет">Не учился в ВУЗе</option></select></div>
         <div id="edu_block" style="display: none; border-left: 3px solid #3498db; padding-left: 15px;">
-            <div class="form-group"><label>ВУЗ: <span class="req">*</span></label><input type="text" id="university"></div>
-            <div class="form-group"><label>Специальность: <span class="req">*</span></label><input type="text" id="speciality"></div>
+            <div class="form-group"><label>ВУЗ: <span class="req">*</span></label><input type="text" id="university" onchange="saveStateToLocal()"></div>
+            <div class="form-group"><label>Специальность: <span class="req">*</span></label><input type="text" id="speciality" onchange="saveStateToLocal()"></div>
             <div style="display: flex; gap: 10px;">
-                 <div class="form-group" style="flex: 1;"><label>Уровень: <span class="req">*</span></label><select id="edu_level"><option value="Бакалавриат">Бакалавриат</option><option value="Магистратура">Магистратура</option><option value="Специалитет">Специалитет</option></select></div>
-                 <div class="form-group" style="flex: 1;"><label>Основа: <span class="req">*</span></label><select id="edu_basis"><option value="Бюджет">Бюджет</option><option value="Платное">Платное</option></select></div>
+                 <div class="form-group" style="flex: 1;"><label>Уровень: <span class="req">*</span></label><select id="edu_level" onchange="saveStateToLocal()"><option value="Бакалавриат">Бакалавриат</option><option value="Магистратура">Магистратура</option><option value="Специалитет">Специалитет</option></select></div>
+                 <div class="form-group" style="flex: 1;"><label>Основа: <span class="req">*</span></label><select id="edu_basis" onchange="saveStateToLocal()"><option value="Бюджет">Бюджет</option><option value="Платное">Платное</option></select></div>
             </div>
-            <div class="form-group" id="course_block"><label>Курс: <span class="req">*</span></label><select id="course"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
+            <div class="form-group" id="course_block"><label>Курс: <span class="req">*</span></label><select id="course" onchange="saveStateToLocal()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
         </div>
 
         <div class="error-msg" id="form-error">Заполните обязательные поля или включите Анонимный режим!</div>
@@ -135,12 +139,20 @@
         <h2>1/3. Жизненные смыслы</h2>
         <div class="instruction">
             <p>Перед вами список из 24 утверждений. Это перечень жизненных смыслов, на которые могут ориентироваться люди.</p>
-            <p>Вам предстоит сделать мягкую рейтинговую оценку. Выберите из списка <b>три утверждения</b>, которые занимают <b>1-е место</b> в системе Ваших личных жизненных смыслов, затем три утверждения, которые Вы могли бы поставить на 2-е, на 3-е и т.д. до 8-го места.</p>
+            <p>Вам предстоит сделать мягкую рейтинговую оценку представленного списка. Для этого выберите из списка <b>три утверждения</b>, которые занимают <b>1-е место</b> в системе Ваших личных жизненных смыслов, затем три утверждения, которые Вы могли бы поставить на 2-е, на 3-е и т.д. до 8-го места.</p>
         </div>
-        <p style="text-align:center; font-weight:bold; color:#2980b9; margin-bottom:10px;" id="bratus-sub">Выберите 3 самых важных</p>
+        
+        <p style="text-align:center; font-weight:bold; color:#2980b9; margin-bottom:10px;" id="bratus-sub">
+            Выберите 3 самых важных утверждения
+        </p>
+        
         <div id="bratus-options"></div>
         <div class="error-msg" id="bratus-error">Выберите ровно 3 пункта!</div>
-        <div class="btn-container"><button class="btn btn-back" onclick="prevBratusRank()">Назад</button><button class="btn btn-next" onclick="nextBratusRank()">Далее</button></div>
+        
+        <div class="btn-container">
+            <button class="btn btn-back" onclick="prevBratusRank()">Назад</button>
+            <button class="btn btn-next" onclick="nextBratusRank()">Далее</button>
+        </div>
     </div>
 
     <!-- МЕТОДИКА 2 -->
@@ -155,9 +167,14 @@
                 <li><b>- / ?</b> (нет, не согласен / не знаю)</li>
             </ul>
         </div>
+        
         <div id="milman-container"></div>
         <div class="error-msg" id="milman-error">Ответьте на вопросы, подсвеченные красным!</div>
-        <div class="btn-container"><button class="btn btn-back" onclick="prevMilman()">Назад</button><button class="btn btn-next" onclick="finishMilman()">Далее</button></div>
+        
+        <div class="btn-container">
+            <button class="btn btn-back" onclick="prevMilman()">Назад</button>
+            <button class="btn btn-next" onclick="finishMilman()">Далее</button>
+        </div>
     </div>
 
     <!-- МЕТОДИКА 3 -->
@@ -166,11 +183,22 @@
         <div class="instruction">
             <p>Вашему вниманию предлагается ряд высказываний, каждое из которых необходимо отнести к себе и решить, в какой мере оно описывает Вашу жизненную позицию.</p>
             <p>Варианты ответов:</p>
-            <ul><li><b>1</b> — Не согласен</li><li><b>2</b> — Скорее не согласен</li><li><b>3</b> — Сложно сказать</li><li><b>4</b> — Скорее согласен</li><li><b>5</b> — Согласен</li></ul>
+            <ul>
+                <li><b>1</b> — Не согласен</li>
+                <li><b>2</b> — Скорее не согласен</li>
+                <li><b>3</b> — Сложно сказать</li>
+                <li><b>4</b> — Скорее согласен</li>
+                <li><b>5</b> — Согласен</li>
+            </ul>
         </div>
+
         <div id="ipl-container"></div>
         <div class="error-msg" id="ipl-error">Ответьте на вопросы, подсвеченные красным!</div>
-        <div class="btn-container"><button class="btn btn-back" onclick="prevIPL()">Назад</button><button class="btn btn-success" onclick="finishSurvey()">Получить результат</button></div>
+        
+        <div class="btn-container">
+            <button class="btn btn-back" onclick="prevIPL()">Назад</button>
+            <button class="btn btn-success" onclick="finishSurvey()">Получить результат</button>
+        </div>
     </div>
 
     <div class="step" id="step-loading" style="text-align:center; padding: 40px 0;">
@@ -182,7 +210,7 @@
     <!-- РЕЗУЛЬТАТЫ -->
     <div class="step" id="step-results">
         <h1 style="color:var(--success)">Исследование завершено!</h1>
-        <p id="final-msg" style="text-align:center">Данные успешно отправлены.</p>
+        <p id="final-msg" style="text-align:center">Данные обрабатываются...</p>
         
         <!-- СЕКЦИЯ СКАЧИВАНИЯ (ВВЕРХУ) -->
         <div class="dl-section">
@@ -210,7 +238,7 @@
             <h3>2. Мотивационная структура личности</h3>
             <p>Сравнение желаемого (Идеальное) и действительного (Реальное).</p>
             <canvas id="chartMilman"></canvas>
-            <div id="textMilman" style="margin-top:15px;"></div>
+            <div id="textMilman" style="margin-top:15px; font-size:0.95em;"></div>
         </div>
 
         <div class="res-block">
@@ -219,7 +247,7 @@
         </div>
 
         <div style="text-align:center; margin-top:30px;">
-            <button class="btn btn-secondary" onclick="window.location.reload()">Начать заново</button>
+            <button class="btn btn-secondary" onclick="clearState()">Начать заново</button>
         </div>
     </div>
 </div>
@@ -227,6 +255,7 @@
 <script>
 // --- КОНФИГУРАЦИЯ ---
 const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbyBH_ksIaHmQxklthf1SgxzmhxAPkqABdkTFTin1TObQJZ98DudLE_20IbqEHR-SKaqCg/exec";
+const STORAGE_KEY = "survey_state_v10";
 
 // ДАННЫЕ
 const bratus_stmts=[{id:1,t:"...чтобы помогать другим людям"},{id:2,t:"...чтобы быть свободным"},{id:3,t:"...чтобы получать удовольствие"},{id:4,t:"...чтобы совершенствоваться"},{id:5,t:"...чтобы добиваться успеха"},{id:6,t:"...чтобы быть с близким человеком"},{id:7,t:"...чтобы передать все лучшее своим детям"},{id:8,t:"...чтобы понять себя самого"},{id:9,t:"...чтобы делать добро"},{id:10,t:"...чтобы жить"},{id:11,t:"...чтобы испытывать счастье"},{id:12,t:"...чтобы осуществить себя"},{id:13,t:"...чтобы сделать хорошую карьеру"},{id:14,t:"...чтобы чувствовать, что кому-то нужен"},{id:15,t:"...чтобы жить ради своей семьи"},{id:16,t:"...чтобы познавать Бога"},{id:17,t:"...чтобы улучшать мир"},{id:18,t:"...чтобы любить"},{id:19,t:"...чтобы получать как можно больше ощущений и переживаний"},{id:20,t:"...чтобы реализовать все свои возможности"},{id:21,t:"...чтобы занимать достойное положение в обществе"},{id:22,t:"...чтобы радоваться общению с другими"},{id:23,t:"...чтобы помогать своим родным и близким"},{id:24,t:"...чтобы понять жизнь"}];
@@ -256,17 +285,63 @@ const ipl_qs=[
 let state = { meta: {}, bratus: {}, rank: 1, milman: {}, ipl: {} };
 let anonMode = false;
 
+// --- PERSISTENCE ---
+function saveStateToLocal() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); updateProgress(); }
+function loadStateFromLocal() {
+    let saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) Object.assign(state, JSON.parse(saved));
+}
+function clearState() { localStorage.removeItem(STORAGE_KEY); window.location.reload(); }
+
+// INIT
+window.onload = function() {
+    if (localStorage.getItem(STORAGE_KEY)) {
+        loadStateFromLocal();
+        if (state.finished) {
+            finishSurvey(true);
+        } else if (Object.keys(state.ipl).length > 0) {
+            switchStep('step-form', 'step-ipl'); renderIPL();
+        } else if (Object.keys(state.milman).length > 0) {
+            switchStep('step-form', 'step-milman'); renderMilman();
+        } else if (state.rank > 1 || (state.bratus && Object.keys(state.bratus).length > 0)) {
+            switchStep('step-form', 'step-bratus'); renderBratus();
+        } else if (state.meta.fio) {
+            restoreForm();
+        }
+    }
+};
+
+function restoreForm() {
+    if (state.meta.mode === 'anon' || state.meta.fio === "Аноним") {
+        document.getElementById('anon_mode').checked = true;
+        toggleAnon();
+    }
+    for(let k in state.meta) { let el = document.getElementById(k); if(el) el.value = state.meta[k]; }
+    toggleWorkPlace(); toggleEduBlock();
+}
+
+function updateProgress() {
+    let current = 0;
+    if (document.getElementById('step-bratus').classList.contains('active')) current = state.rank;
+    else if (document.getElementById('step-milman').classList.contains('active')) current = 9;
+    else if (document.getElementById('step-ipl').classList.contains('active')) current = 10;
+    else if (document.getElementById('step-results').classList.contains('active')) current = 11;
+    
+    let pct = Math.min(100, (current / 11) * 100);
+    document.querySelector('.progress-fill').style.width = pct + "%";
+}
+
 // --- GOD MODE (DEV) ---
 function checkDevMode(val) {
     if(val.toLowerCase().trim() === 'dev') {
         fillRandomData();
     }
+    saveStateToLocal();
 }
 
 function fillRandomData() {
-    // 1. Анкета
-    state.meta = { fio: "Тестовый Юзер", gender: "Мужской", age: "25", family_status: "Холост/Не замужем", children: "Нет", is_working: "Да", work_place: "IT", has_secondary_edu: "Нет", edu_status: "Учусь", university: "СурГУ", speciality: "Психология", edu_level: "Бакалавриат", edu_basis: "Бюджет", course: "4" };
-    // 2. Братусь
+    state.meta = { fio: "Тестовый Юзер", gender: "Мужской", age: "25", family_status: "Холост/Не замужем", children: "Нет", is_working: "Да", work_place: "IT", has_secondary_edu: "Нет", edu_status: "Учусь", university: "СурГУ", speciality: "Психология", edu_level: "Бакалавриат", edu_basis: "Бюджет", course: "4", mode: "dev" };
+    
     let ids = Array.from({length:24}, (_, i) => i + 1);
     for(let r=1; r<=8; r++) {
         state.bratus[r] = [];
@@ -276,22 +351,23 @@ function fillRandomData() {
             ids.splice(randIdx, 1);
         }
     }
-    // 3. Мильман
-    for(let q=0; q<14; q++) for(let i=0; i<8; i++) state.milman[`${q}_${i}`] = Math.floor(Math.random() * 4); // 0-3
-    // 4. ИПЛ
-    for(let i=0; i<36; i++) state.ipl[i] = Math.floor(Math.random() * 5) + 1; // 1-5
+    state.rank = 8;
+    for(let q=0; q<14; q++) for(let i=0; i<8; i++) state.milman[`${q}_${i}`] = Math.floor(Math.random() * 4);
+    for(let i=0; i<36; i++) state.ipl[i] = Math.floor(Math.random() * 5) + 1;
     
-    // Переход
+    saveStateToLocal();
     finishSurvey();
 }
 
 // --- ЛОГИКА ---
 function toggleAnon() {
     anonMode = document.getElementById('anon_mode').checked;
+    state.meta.mode = anonMode ? 'anon' : 'normal';
     document.getElementById('anon_warning').style.display = anonMode ? 'block' : 'none';
     document.querySelectorAll('.req').forEach(el => el.style.display = anonMode ? 'none' : 'inline');
     const inputs = document.querySelectorAll('#step-form input:not(#anon_mode), #step-form select');
     inputs.forEach(el => el.style.backgroundColor = anonMode ? '#f9f9f9' : '#fff');
+    saveStateToLocal();
 }
 
 function toggleWorkPlace() { document.getElementById('work_place_block').style.display = (document.getElementById('is_working').value === "Да") ? 'block' : 'none'; }
@@ -308,6 +384,8 @@ function validateForm() {
     else if(status === 'Закончил') ids = ids.concat(['university','speciality','edu_level','edu_basis']);
     
     let valid = true;
+    anonMode = document.getElementById('anon_mode').checked;
+    
     if (!anonMode) {
         ids.forEach(id => {
             let el = document.getElementById(id);
@@ -319,6 +397,7 @@ function validateForm() {
     }
     if(!valid) { document.getElementById('form-error').style.display = 'block'; return; }
     
+    saveStateToLocal();
     switchStep('step-form', 'step-bratus');
     renderBratus();
 }
@@ -326,100 +405,128 @@ function validateForm() {
 function renderBratus() {
     const c = document.getElementById('bratus-options'); c.innerHTML = "";
     document.getElementById('bratus-sub').innerHTML = `Выберите <b>3</b> утверждения для <b>${state.rank}-го места</b>`;
-    document.getElementById('progress').style.width = (state.rank/8*30)+"%";
-    let used = []; for(let k in state.bratus) if(parseInt(k) !== state.rank) used = used.concat(state.bratus[k]);
+    
+    let used = []; 
+    for(let k in state.bratus) if(parseInt(k) !== state.rank) used = used.concat(state.bratus[k]);
+    
     bratus_stmts.forEach(s => {
         if(!used.includes(s.id)) {
             let div = document.createElement('div'); div.className = 'option-card'; div.innerHTML = `<input type="checkbox" value="${s.id}"> ${s.t}`;
             if(state.bratus[state.rank] && state.bratus[state.rank].includes(s.id)) { div.classList.add('checked'); div.querySelector('input').checked = true; }
-            div.onclick = (e) => { if(e.target.tagName!=='INPUT') div.querySelector('input').click(); div.classList.toggle('checked', div.querySelector('input').checked); };
+            div.onclick = (e) => { 
+                if(e.target.tagName!=='INPUT') div.querySelector('input').click(); 
+                div.classList.toggle('checked', div.querySelector('input').checked); 
+                saveStateToLocal();
+            };
+            div.querySelector('input').onchange = () => saveStateToLocal();
             c.appendChild(div);
         }
     });
+    updateProgress();
 }
 function nextBratusRank() {
     const ch = document.querySelectorAll('#bratus-options input:checked');
     if(ch.length !== 3) { document.getElementById('bratus-error').style.display = 'block'; return; }
     document.getElementById('bratus-error').style.display = 'none';
     state.bratus[state.rank] = Array.from(ch).map(i => parseInt(i.value));
+    saveStateToLocal();
     if(state.rank < 8) { state.rank++; renderBratus(); window.scrollTo(0,0); }
     else { switchStep('step-bratus', 'step-milman'); renderMilman(); }
 }
-function prevBratusRank() { if(state.rank > 1) { state.rank--; renderBratus(); } else switchStep('step-bratus', 'step-form'); }
+function prevBratusRank() { if(state.rank > 1) { state.rank--; renderBratus(); } else switchStep('step-bratus', 'step-form'); saveStateToLocal(); }
 
 function renderMilman() {
     const c = document.getElementById('milman-container');
-    document.getElementById('progress').style.width = "60%";
-    if(c.innerHTML) return; 
+    if(c.innerHTML) {
+        for(let k in state.milman) { 
+            let el = document.querySelector(`input[name="m_${k}"][value="${state.milman[k]}"]`); 
+            if(el) el.checked = true; 
+        }
+        return; 
+    }
+    
     milman_qs.forEach((q, qi) => {
-        let h = `<div class="q-block"><h3>${qi+1}. ${q.q}</h3><table><thead><tr><th>Утверждение</th><th>++ (Да)</th><th>+ (Пож.)</th><th>= (Так себе)</th><th>-/? (Нет)</th></tr></thead><tbody>`;
+        let h = `<div class="q-block"><h3>${qi+1}. ${q.q}</h3><table><thead><tr><th>Утверждение</th><th>++ (Да, согласен)</th><th>+ (Пожалуй)</th><th>= (Когда как)</th><th>- / ? (Нет / Не знаю)</th></tr></thead><tbody>`;
         q.i.forEach((txt, ii) => {
             let nm = `m_${qi}_${ii}`;
             h += `<tr id="row_${nm}"><td>${txt}</td>
-            <td data-label="++"><input type="radio" name="${nm}" value="3" onclick="saveM('${nm}',3)"></td>
-            <td data-label="+"><input type="radio" name="${nm}" value="2" onclick="saveM('${nm}',2)"></td>
-            <td data-label="="><input type="radio" name="${nm}" value="1" onclick="saveM('${nm}',1)"></td>
-            <td data-label="-"><input type="radio" name="${nm}" value="0" onclick="saveM('${nm}',0)"></td></tr>`;
+            <td data-label="++ (Да)"><input type="radio" name="${nm}" value="3" onclick="saveM('${nm}',3)"></td>
+            <td data-label="+ (Пожалуй)"><input type="radio" name="${nm}" value="2" onclick="saveM('${nm}',2)"></td>
+            <td data-label="= (Когда как)"><input type="radio" name="${nm}" value="1" onclick="saveM('${nm}',1)"></td>
+            <td data-label="- / ? (Нет)"><input type="radio" name="${nm}" value="0" onclick="saveM('${nm}',0)"></td></tr>`;
         });
         c.innerHTML += h + "</tbody></table></div>";
     });
+    for(let k in state.milman) { 
+        let el = document.querySelector(`input[name="m_${k}"][value="${state.milman[k]}"]`); 
+        if(el) el.checked = true; 
+    }
+    updateProgress();
 }
-function saveM(k, v) { state.milman[k.replace('m_','')] = v; document.getElementById('row_'+k).classList.remove('highlight-error'); }
+function saveM(k, v) { state.milman[k.replace('m_','')] = v; document.getElementById('row_'+k).classList.remove('highlight-error'); saveStateToLocal(); }
 function finishMilman() {
     if(!validateGroup('m', 14, 8)) return;
     switchStep('step-milman', 'step-ipl');
     renderIPL();
 }
-function prevMilman() { switchStep('step-milman', 'step-bratus'); }
+function prevMilman() { switchStep('step-milman', 'step-bratus'); saveStateToLocal(); }
 
 function renderIPL() {
     const c = document.getElementById('ipl-container');
-    document.getElementById('progress').style.width = "90%";
-    if(c.innerHTML) return;
-    let h = `<table><thead><tr><th>Утверждение</th><th>1 (Нет)</th><th>2</th><th>3</th><th>4</th><th>5 (Да)</th></tr></thead><tbody>`;
+    if(c.innerHTML) {
+        for(let k in state.ipl) { 
+            let el = document.querySelector(`input[name="ipl_${k}"][value="${state.ipl[k]}"]`); 
+            if(el) el.checked = true; 
+        }
+        return;
+    }
+    let h = `<table><thead><tr><th>Утверждение</th><th>1 (Не согласен)</th><th>2</th><th>3</th><th>4</th><th>5 (Согласен)</th></tr></thead><tbody>`;
     ipl_qs.forEach((txt, i) => {
         let nm = `ipl_${i}`;
         h += `<tr id="row_${nm}"><td>${i+1}. ${txt}</td>${[1,2,3,4,5].map(v => `<td data-label="${v}"><input type="radio" name="${nm}" value="${v}" onclick="saveI(${i},${v})"></td>`).join('')}</tr>`;
     });
     c.innerHTML = h + "</tbody></table>";
+    for(let k in state.ipl) { 
+        let el = document.querySelector(`input[name="ipl_${k}"][value="${state.ipl[k]}"]`); 
+        if(el) el.checked = true; 
+    }
+    updateProgress();
 }
-function saveI(i, v) { state.ipl[i] = v; document.getElementById('row_ipl_'+i).classList.remove('highlight-error'); }
-function prevIPL() { switchStep('step-ipl', 'step-milman'); }
+function saveI(i, v) { state.ipl[i] = v; document.getElementById('row_ipl_'+i).classList.remove('highlight-error'); saveStateToLocal(); }
+function prevIPL() { switchStep('step-ipl', 'step-milman'); saveStateToLocal(); }
 
 // --- ФИНАЛ ---
-function finishSurvey() {
-    if(!validateGroup('ipl', 36, 1)) return;
-    switchStep('step-ipl', 'step-loading');
+function finishSurvey(skipFetch = false) {
+    if(!skipFetch && !validateGroup('ipl', 36, 1)) return;
     
-    // Проверка на режим разработчика (по имени)
-    const isDev = state.meta.fio === "Тестовый Юзер";
+    state.finished = true; 
+    saveStateToLocal();
+    updateProgress();
 
-    if (!isDev) {
-        // РЕАЛЬНЫЙ РЕЖИМ: Отправляем в Google
-        fetch(GOOGLE_URL, { 
-            method: "POST", 
-            mode: "no-cors", 
-            headers: { "Content-Type": "application/json" }, 
-            body: JSON.stringify(state) 
-        })
-        .then(() => { 
-            document.getElementById('final-msg').innerHTML += " <b style='color:green'>Сохранено в облаке.</b>"; 
-        })
-        .catch(() => { 
-            document.getElementById('final-msg').innerHTML += " <b style='color:red'>Ошибка облака (сохраните файл!).</b>"; 
-        });
-    } else {
-        // РЕЖИМ РАЗРАБОТЧИКА: Не отправляем
-        console.log("DEV MODE: Отправка в облако заблокирована.");
-        document.getElementById('final-msg').innerHTML += " <b style='color:orange'>[DEV MODE] Отправка отключена.</b>";
+    if(skipFetch) {
+        switchStep('step-ipl', 'step-results'); 
+        switchStep('step-form', 'step-results'); 
+        calculateAndShowResults(true);
+        return;
     }
 
-    // 2. Расчет (работает всегда)
+    switchStep('step-ipl', 'step-loading');
+    
+    const isDev = state.meta.mode === 'dev';
+
+    if (!isDev) {
+        fetch(GOOGLE_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify(state) })
+        .then(() => { document.getElementById('final-msg').innerHTML = "Данные успешно <b style='color:green'>сохранены в облаке</b>."; })
+        .catch(() => { document.getElementById('final-msg').innerHTML = "<b style='color:red'>Ошибка отправки!</b> Обязательно сохраните файл."; });
+    } else {
+        console.log("DEV MODE: Отправка заблокирована.");
+        document.getElementById('final-msg').innerHTML = "<b style='color:orange'>[РЕЖИМ РАЗРАБОТЧИКА]</b> Отправка в облако отключена.";
+    }
+
     calculateAndShowResults();
 }
 
-
-function calculateAndShowResults() {
+function calculateAndShowResults(immediate = false) {
     // 1. БРАТУСЬ
     const cats_map = { 'Альтруистические': [1,9,17], 'Экзистенциальные': [2,10,18], 'Гедонистические': [3,11,19], 'Самореализации': [4,12,20], 'Статусные': [5,13,21], 'Коммуникативные': [6,14,22], 'Семейные': [7,15,23], 'Когнитивные': [8,16,24] };
     let b_labels=[], b_data=[], b_desc="";
@@ -432,10 +539,39 @@ function calculateAndShowResults() {
     }
 
     // 2. МИЛЬМАН
-    const m_keys = [ ['P','P','O','D','OD','S','DR','DR'], ['P','K','K','S','S','DR','DR','OD'], ['P','K','O','OD','OD','-','D','P'], ['D','O','OD','D','DR','P','OD','K'], ['P','K','K','OD','DR','DR','OD','P'], ['D','D','O','S','-','DR','OD','P'], ['K','O','S','S','P','DR','DR','O'], ['P','O','S','O','DR','OD','DR','S'], ['K','D','S','S','O','S','D','K'], ['O','OD','P','S','P','OD','DR','-'], ['P','K','K','O','S','S','OD','DR'], ['P','K','K','DR','S','S','OD','P'] ];
+    const m_keys = [ ['P','P','O','D','OD','S','DR','DR'], ['P','K','K','S','S','DR','DR','OD'], ['P','K','O','OD','OD','-','D','P'], ['D','O','OD','D','DR','P','OD','K'], ['P','K','K','OD','DR','DR','OD','P'], ['D','D','O','S','-','DR','OD','P'], ['K','O','S','S','P','DR','DR','O'], ['P','O','S','O','DR','OD','DR','S'], ['K','D','S','S','O','S','D','K'], ['O','OD','P','S','P','OD','DR','-'], ['P','K','K','O','S','S','OD','DR'], ['P','K','K','DR','S','S','OD','P'], ['ast','ast','ast','ast','st','st','st','st'], ['ast','ast','ast','ast','st','st','st','st'] ];
     const sub_map = { 0:'id', 4:'id', 8:'id', 1:'id', 5:'id', 9:'id', 2:'re', 6:'re', 10:'re', 3:'re', 7:'re', 11:'re' };
     let m_scores = { 'id': {'P':0,'K':0,'S':0,'O':0,'D':0,'DR':0,'OD':0}, 're': {'P':0,'K':0,'S':0,'O':0,'D':0,'DR':0,'OD':0} };
-    for(let q=0; q<12; q++) { let type = sub_map[q]; for(let i=0; i<8; i++) { let val = state.milman[`${q}_${i}`] || 0; let scale = m_keys[q][i]; if(scale !== '-' && m_scores[type][scale] !== undefined) m_scores[type][scale] += val; } }
+    
+    // Эмоциональный профиль
+    let emo = { st:0, ast:0, fst:0, fast:0 };
+
+    for(let q=0; q<14; q++) { 
+        if (q < 12) { // Мотивация
+            let type = sub_map[q]; 
+            for(let i=0; i<8; i++) { 
+                let val = state.milman[`${q}_${i}`] || 0; 
+                let scale = m_keys[q][i]; 
+                if(scale !== '-' && m_scores[type][scale] !== undefined) m_scores[type][scale] += val; 
+            }
+        } else { // Эмоции (13, 14)
+            for(let i=0; i<8; i++) {
+                let val = state.milman[`${q}_${i}`] || 0;
+                let scale = m_keys[q][i]; // 'st' или 'ast'
+                if(q === 12) emo[scale] += val;
+                if(q === 13) scale === 'st' ? emo.fst += val : emo.fast += val;
+            }
+        }
+    }
+    
+    // Тип профиля Мильмана
+    let sum_maintain = m_scores['id']['P'] + m_scores['id']['K'] + m_scores['id']['S']; 
+    let sum_develop = m_scores['id']['D'] + m_scores['id']['DR'] + m_scores['id']['OD'];
+    let m_type = (sum_develop - sum_maintain >= 5) ? "<span class='score-badge bg-green'>Прогрессивный</span> (развитие преобладает)" : (sum_maintain > sum_develop ? "<span class='score-badge bg-red'>Регрессивный</span> (потребление преобладает)" : "<span class='score-badge bg-blue'>Импульсивный/Смешанный</span>");
+
+    // Тип Эмоциональный
+    let emo_type = (emo.st > emo.ast) ? "<span class='score-badge bg-green'>Стенический</span> (активность, устойчивость)" : "<span class='score-badge bg-red'>Астенический</span> (тревожность, неустойчивость)";
+
     const scales_order = ['P','K','S','O','D','DR','OD'];
     const scales_names = ['Жизнеобеспечение','Комфорт','Социальный статус','Общение','Общая активность','Творческая активность','Общественная польза'];
     let data_id = scales_order.map(s => m_scores['id'][s]);
@@ -447,38 +583,53 @@ function calculateAndShowResults() {
     for(let i=0; i<36; i++) { let val = state.ipl[i]; if(rev_idx.includes(i)) val = 6 - val; ipl_sum += val; }
 
     setTimeout(() => {
-        switchStep('step-loading', 'step-results');
+        if(!immediate) switchStep('step-loading', 'step-results');
         
         document.getElementById('result-area').value = JSON.stringify(state, null, 2);
 
-        new Chart(document.getElementById('chartBratus').getContext('2d'), {
+        if(window.chartB) window.chartB.destroy();
+        window.chartB = new Chart(document.getElementById('chartBratus').getContext('2d'), {
             type: 'bar', data: { labels: b_labels, datasets: [{ label: 'Сумма рангов (Меньше = Важнее)', data: b_data, backgroundColor: '#3498db' }] },
             options: { scales: { y: { reverse: true, min: 0, max: 25 } } }
         });
         document.getElementById('textBratus').innerHTML = b_desc;
         
-        new Chart(document.getElementById('chartMilman').getContext('2d'), {
+        if(window.chartM) window.chartM.destroy();
+        window.chartM = new Chart(document.getElementById('chartMilman').getContext('2d'), {
             type: 'line', data: { labels: scales_names, datasets: [ { label: 'Желаемое (Идеал)', data: data_id, borderColor: '#27ae60', backgroundColor: 'rgba(39,174,96,0.1)', fill: true }, { label: 'Текущее (Реал)', data: data_re, borderColor: '#e74c3c', backgroundColor: 'rgba(231,76,60,0.1)', fill: true } ] },
             options: { scales: { y: { min: 0 } } }
         });
-        document.getElementById('textMilman').innerHTML = ``;
+        document.getElementById('textMilman').innerHTML = `
+            <div style="margin-top:15px; border-top:1px solid #eee; padding-top:10px;">
+                <div><b>Тип мотивационного профиля:</b> ${m_type}</div>
+                <div><b>Тип эмоционального профиля:</b> ${emo_type}</div>
+            </div>
+        `;
 
         let ipl_level = ipl_sum >= 118 ? "Высокий" : (ipl_sum >= 95 ? "Средний" : "Низкий");
         let ipl_cls = ipl_sum >= 118 ? "bg-green" : (ipl_sum >= 95 ? "bg-blue" : "bg-red");
+        let ipl_text = ipl_sum >= 118 ? "<b>Инициативно-преобразовательный тип.</b> Вы открыты новому, легко адаптируетесь к переменам и готовы к риску." : (ipl_sum >= 95 ? "<b>Позитивно-дифференцированный тип.</b> Вы взвешенно подходите к инновациям, принимая их, когда видите практическую пользу." : "<b>Вынужденно-приспособительный тип.</b> Вы цените стабильность и традиции, перемены могут вызывать у вас дискомфорт.");
+
         document.getElementById('textIPL').innerHTML = `
             <div style="display:flex; align-items:center; gap:15px; margin-bottom:15px;">
                 <div style="font-size:2.5em; font-weight:bold; color:#2c3e50;">${ipl_sum}</div>
                 <div><span class="score-badge ${ipl_cls}" style="font-size:1.1em;">Уровень: ${ipl_level}</span></div>
             </div>
-            <p>${ipl_level === "Высокий" ? "Вы открыты новому, легко адаптируетесь к переменам и готовы к риску." : ipl_level === "Средний" ? "Вы взвешенно подходите к инновациям, принимая их, когда видите практическую пользу." : "Вы цените стабильность и традиции, перемены могут вызывать у вас дискомфорт."}</p>
+            <p>${ipl_text}</p>
         `;
-    }, 1000);
+    }, immediate ? 0 : 1000);
 }
 
 // Утилиты
-function switchStep(f, t) { document.getElementById(f).classList.remove('active'); setTimeout(() => document.getElementById(t).classList.add('active'), 200); window.scrollTo(0,0); }
+function switchStep(f, t) { document.getElementById(f).classList.remove('active'); setTimeout(() => document.getElementById(t).classList.add('active'), 200); window.scrollTo(0,0); updateProgress(); }
 function downloadJSON() { const fn = `Res_${state.meta.fio.replace(/[^а-яА-Яa-zA-Z0-9]/g,'_')}.json`; const blob = new Blob([JSON.stringify(state, null, 2)], {type: "application/json"}); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = fn; document.body.appendChild(a); a.click(); a.remove(); }
-function copyResult() { let txt = document.getElementById('result-area'); txt.style.display = 'block'; txt.select(); document.execCommand('copy'); document.getElementById('copy-msg').style.display = 'block'; }
+function copyResult() { 
+    let txt = document.getElementById('result-area'); 
+    txt.style.display = 'block'; 
+    txt.select(); 
+    document.execCommand('copy'); 
+    document.getElementById('copy-msg').style.display = 'block'; 
+}
 function validateGroup(prefix, c1, c2) {
     let err = null; let cont = prefix==='m'?state.milman:state.ipl;
     if(c2===1) { for(let i=0;i<c1;i++) if(!cont[i]) { err=document.getElementById('row_ipl_'+i); err.classList.add('highlight-error'); break; } }
@@ -489,4 +640,3 @@ function validateGroup(prefix, c1, c2) {
 </script>
 </body>
 </html>
-
