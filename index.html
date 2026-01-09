@@ -18,7 +18,6 @@
         .instruction { background-color: var(--info-bg); border-left: 5px solid var(--primary); padding: 15px; border-radius: 4px; margin-bottom: 25px; font-size: 0.95rem; color: #2c3e50; line-height: 1.6; }
         .instruction ul { margin: 5px 0 10px 20px; padding: 0; }
         
-        /* Анонимность */
         .anon-switch { background: #fff3cd; border: 1px solid #ffeeba; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: flex-start; gap: 10px; }
         .anon-switch input { width: 20px; height: 20px; margin-top: 3px; }
         .anon-warning { font-size: 0.85em; color: #856404; margin-top: 5px; display: none; }
@@ -39,7 +38,6 @@
         .btn-success { background-color: var(--success); }
         .btn-secondary { background-color: #95a5a6; margin-top: 10px; width: 100%; padding: 12px; }
         
-        /* Карточки */
         .option-card { border: 2px solid #eee; padding: 12px; margin-bottom: 8px; border-radius: 10px; display: flex; align-items: center; cursor: pointer; transition: all 0.2s; background: #fff; }
         .option-card input { width: 22px; height: 22px; margin-right: 15px; flex-shrink: 0; }
         .option-card.checked { border-color: var(--primary); background-color: #f0f9ff; }
@@ -47,25 +45,28 @@
         .error-msg { color: #fff; background: var(--error); padding: 12px; border-radius: 8px; margin-top: 20px; text-align: center; display: none; font-weight: bold; }
         .highlight-error { border: 2px solid var(--error) !important; background-color: #fff5f5 !important; }
 
-        /* Таблицы */
         table { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
         th, td { padding: 12px; text-align: center; border-bottom: 1px solid #eee; vertical-align: middle; }
         th { background: #f8f9fa; font-size: 0.85rem; color: #333; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         td:first-child { text-align: left; font-weight: 500; font-size: 0.95rem; width: 45%; }
         
-        /* Результаты */
         .res-block { background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .score-badge { display: inline-block; padding: 5px 10px; border-radius: 15px; font-weight: bold; font-size: 0.9em; margin-bottom: 5px; }
+        .score-badge { display: inline-block; padding: 5px 10px; border-radius: 15px; font-weight: bold; font-size: 0.9em; }
         .bg-green { background: #d4edda; color: #155724; }
         .bg-red { background: #f8d7da; color: #721c24; }
         .bg-blue { background: #d1ecf1; color: #0c5460; }
-        .bg-yellow { background: #fff3cd; color: #856404; }
         canvas { max-height: 300px; margin-top: 15px; }
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
         .dl-section { background: #f0f7fb; border: 2px dashed #3498db; padding: 20px; text-align: center; border-radius: 10px; margin-bottom: 30px; }
         #result-area { width: 100%; height: 80px; margin-top: 10px; font-size: 12px; padding: 10px; border: 1px solid #ddd; display: none; }
+
+        /* DEV TOOLS */
+        #dev-panel { display: none; background: #333; color: #fff; padding: 15px; border-radius: 8px; margin-top: 15px; }
+        #dev-json-input { width: 100%; height: 100px; margin-top: 10px; font-family: monospace; font-size: 12px; color: #333; }
+        .dev-btn { background: #555; border: 1px solid #777; color: white; padding: 8px 15px; cursor: pointer; border-radius: 4px; font-size: 0.9em; margin-right: 10px; }
+        .dev-btn:hover { background: #666; }
 
         @media (max-width: 600px) {
             .container { padding: 15px; }
@@ -107,8 +108,22 @@
             </div>
         </div>
 
-        <div class="form-group"><label>Ваше имя (или псевдоним): <span class="req">*</span></label><input type="text" id="fio" placeholder="Иванов Иван" onchange="checkDevMode(this.value)"></div>
+        <div class="form-group"><label>Ваше имя (или псевдоним): <span class="req">*</span></label><input type="text" id="fio" placeholder="Иванов Иван" onkeyup="checkDevMode(this.value)"></div>
         
+        <!-- DEV TOOLS -->
+        <div id="dev-panel">
+            <div style="font-weight:bold; margin-bottom:10px;">🛠️ Режим разработчика</div>
+            <div style="display:flex; align-items:center;">
+                <button class="dev-btn" onclick="fillRandomData()">🎲 Заполнить случайно</button>
+                <button class="dev-btn" onclick="document.getElementById('dev-import').style.display='block'">📂 Загрузить JSON</button>
+            </div>
+            <div id="dev-import" style="display:none; margin-top:10px;">
+                <textarea id="dev-json-input" placeholder="Вставьте JSON сюда..."></textarea>
+                <button class="dev-btn" style="margin-top:5px; background:#27ae60" onclick="loadDevJSON()">Применить</button>
+                <div id="dev-error" style="color:#e74c3c; font-size:0.9em; margin-top:5px;"></div>
+            </div>
+        </div>
+
         <div style="display: flex; gap: 10px;">
             <div class="form-group" style="flex: 1;"><label>Пол: <span class="req">*</span></label><select id="gender" onchange="saveStateToLocal()"><option value="">Выбрать...</option><option value="Мужской">Мужской</option><option value="Женский">Женский</option></select></div>
             <div class="form-group" style="flex: 1;"><label>Возраст: <span class="req">*</span></label><input type="number" id="age" placeholder="18" onchange="saveStateToLocal()"></div>
@@ -134,71 +149,40 @@
         <button class="btn btn-next" onclick="validateForm()">Начать исследование</button>
     </div>
 
-    <!-- МЕТОДИКА 1 -->
+    <!-- МЕТОДИКИ -->
     <div class="step" id="step-bratus">
         <h2>1/3. Жизненные смыслы</h2>
         <div class="instruction">
             <p>Перед вами список из 24 утверждений. Это перечень жизненных смыслов, на которые могут ориентироваться люди.</p>
             <p>Вам предстоит сделать мягкую рейтинговую оценку представленного списка. Для этого выберите из списка <b>три утверждения</b>, которые занимают <b>1-е место</b> в системе Ваших личных жизненных смыслов, затем три утверждения, которые Вы могли бы поставить на 2-е, на 3-е и т.д. до 8-го места.</p>
         </div>
-        
-        <p style="text-align:center; font-weight:bold; color:#2980b9; margin-bottom:10px;" id="bratus-sub">
-            Выберите 3 самых важных утверждения
-        </p>
-        
+        <p style="text-align:center; font-weight:bold; color:#2980b9; margin-bottom:10px;" id="bratus-sub">Выберите 3 самых важных</p>
         <div id="bratus-options"></div>
         <div class="error-msg" id="bratus-error">Выберите ровно 3 пункта!</div>
-        
-        <div class="btn-container">
-            <button class="btn btn-back" onclick="prevBratusRank()">Назад</button>
-            <button class="btn btn-next" onclick="nextBratusRank()">Далее</button>
-        </div>
+        <div class="btn-container"><button class="btn btn-back" onclick="prevBratusRank()">Назад</button><button class="btn btn-next" onclick="nextBratusRank()">Далее</button></div>
     </div>
 
-    <!-- МЕТОДИКА 2 -->
     <div class="step" id="step-milman">
         <h2>2/3. Мотивация</h2>
         <div class="instruction">
             <p>Перед вами 14 утверждений, касающихся ваших жизненных стремлений и некоторых сторон вашего образа жизни. Просим вас высказать отношение к ним по каждому из 8 вариантов ответов, проставив одну из следующих оценок:</p>
-            <ul>
-                <li><b>++</b> (да, согласен)</li>
-                <li><b>+</b> (пожалуй согласен)</li>
-                <li><b>=</b> (когда как, согласен в некоторой степени)</li>
-                <li><b>- / ?</b> (нет, не согласен / не знаю)</li>
-            </ul>
+            <ul><li><b>++</b> (да, согласен)</li><li><b>+</b> (пожалуй согласен)</li><li><b>=</b> (когда как, согласен в некоторой степени)</li><li><b>- / ?</b> (нет, не согласен / не знаю)</li></ul>
         </div>
-        
         <div id="milman-container"></div>
         <div class="error-msg" id="milman-error">Ответьте на вопросы, подсвеченные красным!</div>
-        
-        <div class="btn-container">
-            <button class="btn btn-back" onclick="prevMilman()">Назад</button>
-            <button class="btn btn-next" onclick="finishMilman()">Далее</button>
-        </div>
+        <div class="btn-container"><button class="btn btn-back" onclick="prevMilman()">Назад</button><button class="btn btn-next" onclick="finishMilman()">Далее</button></div>
     </div>
 
-    <!-- МЕТОДИКА 3 -->
     <div class="step" id="step-ipl">
         <h2>3/3. Инновации</h2>
         <div class="instruction">
             <p>Вашему вниманию предлагается ряд высказываний, каждое из которых необходимо отнести к себе и решить, в какой мере оно описывает Вашу жизненную позицию.</p>
             <p>Варианты ответов:</p>
-            <ul>
-                <li><b>1</b> — Не согласен</li>
-                <li><b>2</b> — Скорее не согласен</li>
-                <li><b>3</b> — Сложно сказать</li>
-                <li><b>4</b> — Скорее согласен</li>
-                <li><b>5</b> — Согласен</li>
-            </ul>
+            <ul><li><b>1</b> — Не согласен</li><li><b>2</b> — Скорее не согласен</li><li><b>3</b> — Сложно сказать</li><li><b>4</b> — Скорее согласен</li><li><b>5</b> — Согласен</li></ul>
         </div>
-
         <div id="ipl-container"></div>
         <div class="error-msg" id="ipl-error">Ответьте на вопросы, подсвеченные красным!</div>
-        
-        <div class="btn-container">
-            <button class="btn btn-back" onclick="prevIPL()">Назад</button>
-            <button class="btn btn-success" onclick="finishSurvey()">Получить результат</button>
-        </div>
+        <div class="btn-container"><button class="btn btn-back" onclick="prevIPL()">Назад</button><button class="btn btn-success" onclick="finishSurvey()">Получить результат</button></div>
     </div>
 
     <div class="step" id="step-loading" style="text-align:center; padding: 40px 0;">
@@ -212,7 +196,6 @@
         <h1 style="color:var(--success)">Исследование завершено!</h1>
         <p id="final-msg" style="text-align:center">Данные обрабатываются...</p>
         
-        <!-- СЕКЦИЯ СКАЧИВАНИЯ (ВВЕРХУ) -->
         <div class="dl-section">
             <h3 style="margin-top:0">📁 Сохраните ваш результат</h3>
             <p style="font-size:0.9em; margin-bottom:15px">Обязательно сохраните файл или скопируйте текст, чтобы отправить его исследователю.</p>
@@ -224,7 +207,6 @@
             <p id="copy-msg" style="color:var(--success); display:none; font-weight:bold; margin-top:5px;">Скопировано!</p>
         </div>
 
-        <!-- ИНТЕРПРЕТАЦИЯ (НИЖЕ) -->
         <h2 style="margin-top:40px;">📊 Интерпретация результатов</h2>
         
         <div class="res-block">
@@ -238,7 +220,7 @@
             <h3>2. Мотивационная структура личности</h3>
             <p>Сравнение желаемого (Идеальное) и действительного (Реальное).</p>
             <canvas id="chartMilman"></canvas>
-            <div id="textMilman" style="margin-top:15px; font-size:0.95em;"></div>
+            <div id="textMilman" style="margin-top:15px;"></div>
         </div>
 
         <div class="res-block">
@@ -334,9 +316,8 @@ function updateProgress() {
 // --- GOD MODE (DEV) ---
 function checkDevMode(val) {
     if(val.toLowerCase().trim() === 'dev') {
-        fillRandomData();
+        document.getElementById('dev-panel').style.display = 'block';
     }
-    saveStateToLocal();
 }
 
 function fillRandomData() {
@@ -357,6 +338,23 @@ function fillRandomData() {
     
     saveStateToLocal();
     finishSurvey();
+}
+
+function loadDevJSON() {
+    try {
+        let json = document.getElementById('dev-json-input').value;
+        let data = JSON.parse(json);
+        if(data.bratus && data.milman && data.ipl) {
+            state = data;
+            state.meta.mode = "dev"; // Force dev to avoid pollution
+            saveStateToLocal();
+            finishSurvey(true);
+        } else {
+            alert("Некорректный JSON (нет полей bratus/milman/ipl)");
+        }
+    } catch(e) {
+        document.getElementById('dev-error').innerText = "Ошибка парсинга: " + e.message;
+    }
 }
 
 // --- ЛОГИКА ---
@@ -437,6 +435,7 @@ function prevBratusRank() { if(state.rank > 1) { state.rank--; renderBratus(); }
 
 function renderMilman() {
     const c = document.getElementById('milman-container');
+    document.getElementById('progress').style.width = "60%"; 
     if(c.innerHTML) {
         for(let k in state.milman) { 
             let el = document.querySelector(`input[name="m_${k}"][value="${state.milman[k]}"]`); 
@@ -446,7 +445,7 @@ function renderMilman() {
     }
     
     milman_qs.forEach((q, qi) => {
-        let h = `<div class="q-block"><h3>${qi+1}. ${q.q}</h3><table><thead><tr><th>Утверждение</th><th>++ (Да, согласен)</th><th>+ (Пожалуй)</th><th>= (Когда как)</th><th>- / ? (Нет / Не знаю)</th></tr></thead><tbody>`;
+        let h = `<div class="q-block"><h3>${qi+1}. ${q.q}</h3><table><thead><tr><th>Утверждение</th><th>++ (Да, согласен)</th><th>+ (Пожалуй согласен)</th><th>= (Когда как)</th><th>- / ? (Нет / Не знаю)</th></tr></thead><tbody>`;
         q.i.forEach((txt, ii) => {
             let nm = `m_${qi}_${ii}`;
             h += `<tr id="row_${nm}"><td>${txt}</td>
