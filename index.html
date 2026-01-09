@@ -461,7 +461,7 @@ function calculateAndShowResults() {
             type: 'line', data: { labels: scales_names, datasets: [ { label: 'Желаемое (Идеал)', data: data_id, borderColor: '#27ae60', backgroundColor: 'rgba(39,174,96,0.1)', fill: true }, { label: 'Текущее (Реал)', data: data_re, borderColor: '#e74c3c', backgroundColor: 'rgba(231,76,60,0.1)', fill: true } ] },
             options: { scales: { y: { min: 0 } } }
         });
-        document.getElementById('textMilman').innerHTML = `<p><b>Расшифровка шкал:</b><br>П — Поддержание жизнеобеспечения<br>К — Комфорт<br>С — Социальный статус<br>О — Общение<br>Д — Общая активность<br>ДР — Творческая активность<br>ОД — Общественная полезность</p>`;
+        document.getElementById('textMilman').innerHTML = ``;
 
         let ipl_level = ipl_sum >= 118 ? "Высокий" : (ipl_sum >= 95 ? "Средний" : "Низкий");
         let ipl_cls = ipl_sum >= 118 ? "bg-green" : (ipl_sum >= 95 ? "bg-blue" : "bg-red");
@@ -489,3 +489,4 @@ function validateGroup(prefix, c1, c2) {
 </script>
 </body>
 </html>
+
