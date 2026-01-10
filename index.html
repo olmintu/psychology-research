@@ -129,7 +129,7 @@
             <div class="form-group" style="flex: 1;"><label>Возраст: <span class="req">*</span></label><input type="number" id="age" placeholder="18" onchange="saveStateToLocal()"></div>
         </div>
         <div class="form-group"><label>Семейное положение: <span class="req">*</span></label><select id="family_status" onchange="saveStateToLocal()"><option value="">Выбрать...</option><option value="Холост/Не замужем">Холост / Не замужем</option><option value="Женат/Замужем">Женат / Замужем</option><option value="В разводе">В разводе</option></select></div>
-        <div class="form-group"><label>Есть ли дети? <span class="req">*</span></label><select id="children" onchange="saveStateToLocal()"><option value="">Нет</option><option value="Да">Да</option></select></div>
+        <div class="form-group"><label>Есть ли дети? <span class="req">*</span></label><select id="children" onchange="saveStateToLocal()"><option value="Нет">Нет</option><option value="Да">Да</option></select></div>
         <div class="form-group"><label>Работаете ли Вы? <span class="req">*</span></label><select id="is_working" onchange="toggleWorkPlace(); saveStateToLocal()"><option value="Нет">Нет</option><option value="Да">Да</option></select></div>
         <div class="form-group" id="work_place_block" style="display: none;"><label>Где работаете? (не обязательно)</label><input type="text" id="work_place" onchange="saveStateToLocal()"></div>
         <div class="form-group"><label>Среднее спец. образование? <span class="req">*</span></label><select id="has_secondary_edu" onchange="saveStateToLocal()"><option value="Нет">Нет</option><option value="Да">Да</option></select></div>
@@ -639,3 +639,4 @@ function validateGroup(prefix, c1, c2) {
 </script>
 </body>
 </html>
+
