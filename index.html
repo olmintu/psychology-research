@@ -282,15 +282,17 @@ window.onload = function() {
         if (state.finished) {
             finishSurvey(true);
         } else if (Object.keys(state.ipl).length > 0) {
-            switchStep('step-form', 'step-ipl'); renderIPL();
+            switchStep('step-form', 'step-ipl'); renderIPL(); updateProgress();
         } else if (Object.keys(state.milman).length > 0) {
-            switchStep('step-form', 'step-milman'); renderMilman();
+            switchStep('step-form', 'step-milman'); renderMilman(); updateProgress();
         } else if (state.rank > 1 || (state.bratus && Object.keys(state.bratus).length > 0)) {
-            switchStep('step-form', 'step-bratus'); renderBratus();
+            switchStep('step-form', 'step-bratus'); renderBratus(); updateProgress();
         } else if (state.meta.fio) {
             restoreForm();
+            updateProgress();
         }
     }
+    updateProgress();
 };
 
 function restoreForm() {
@@ -299,18 +301,70 @@ function restoreForm() {
         toggleAnon();
     }
     for(let k in state.meta) { let el = document.getElementById(k); if(el) el.value = state.meta[k]; }
-    toggleWorkPlace(); toggleEduBlock();
+    toggleWorkPlace(); toggleEduBlock(); updateProgress();
+}
+// --- PROGRESS BAR ---
+function updateProgress() {
+    const totalSteps = 11; // Анкета + 8 рангов + Мильман + IPL
+    
+    let current = 0;
+    const activeStep = document.querySelector('.step.active').id;
+    
+    switch(activeStep) {
+        case 'step-form':
+            // Проверяем, заполнена ли анкета
+            const formComplete = checkFormCompletion();
+            current = formComplete ? 1 : 0;
+            break;
+            
+        case 'step-bratus':
+            // Анкета (1) + пройденные ранги
+            current = 1 + (state.rank - 1);
+            break;
+            
+        case 'step-milman':
+            // Анкета (1) + все 8 рангов (8) = 9
+            current = 9;
+            break;
+            
+        case 'step-ipl':
+            // Анкета (1) + ранги (8) + Мильман (1) = 10
+            current = 10;
+            break;
+            
+        case 'step-loading':
+        case 'step-results':
+            current = 11;
+            break;
+            
+        default:
+            current = 0;
+    }
+    
+    // Расчет процентов (от 0 до 100)
+    const progressPercent = Math.min(100, (current / totalSteps) * 100);
+    document.querySelector('.progress-fill').style.width = progressPercent + "%";
+    
+    console.log(`Active: ${activeStep}, Step: ${current}/${totalSteps}, Progress: ${progressPercent}%`);
 }
 
-function updateProgress() {
-    let current = 0;
-    if (document.getElementById('step-bratus').classList.contains('active')) current = state.rank;
-    else if (document.getElementById('step-milman').classList.contains('active')) current = 9;
-    else if (document.getElementById('step-ipl').classList.contains('active')) current = 10;
-    else if (document.getElementById('step-results').classList.contains('active')) current = 11;
+// Вспомогательная функция для проверки заполнения анкеты
+function checkFormCompletion() {
+    if (document.getElementById('anon_mode').checked) return true;
     
-    let pct = Math.min(100, (current / 11) * 100);
-    document.querySelector('.progress-fill').style.width = pct + "%";
+    const requiredFields = [
+        'fio', 'gender', 'age', 'family_status', 
+        'children', 'is_working', 'has_secondary_edu', 'edu_status'
+    ];
+    
+    for (const fieldId of requiredFields) {
+        const element = document.getElementById(fieldId);
+        if (!element || !element.value.trim()) {
+            return false;
+        }
+    }
+    
+    return true;
 }
 
 // --- GOD MODE (DEV) ---
@@ -366,6 +420,7 @@ function toggleAnon() {
     const inputs = document.querySelectorAll('#step-form input:not(#anon_mode), #step-form select');
     inputs.forEach(el => el.style.backgroundColor = anonMode ? '#f9f9f9' : '#fff');
     saveStateToLocal();
+    updateProgress();
 }
 
 function toggleWorkPlace() { document.getElementById('work_place_block').style.display = (document.getElementById('is_working').value === "Да") ? 'block' : 'none'; }
@@ -398,6 +453,7 @@ function validateForm() {
     saveStateToLocal();
     switchStep('step-form', 'step-bratus');
     renderBratus();
+    updateProgress();
 }
 
 function renderBratus() {
@@ -428,10 +484,10 @@ function nextBratusRank() {
     document.getElementById('bratus-error').style.display = 'none';
     state.bratus[state.rank] = Array.from(ch).map(i => parseInt(i.value));
     saveStateToLocal();
-    if(state.rank < 8) { state.rank++; renderBratus(); window.scrollTo(0,0); }
+    if(state.rank < 8) { state.rank++; renderBratus(); window.scrollTo(0,0); updateProgress(); }
     else { switchStep('step-bratus', 'step-milman'); renderMilman(); }
 }
-function prevBratusRank() { if(state.rank > 1) { state.rank--; renderBratus(); } else switchStep('step-bratus', 'step-form'); saveStateToLocal(); }
+function prevBratusRank() { if(state.rank > 1) { state.rank--; renderBratus(); updateProgress(); } else switchStep('step-bratus', 'step-form'); saveStateToLocal(); }
 
 function renderMilman() {
     const c = document.getElementById('milman-container');
@@ -467,8 +523,9 @@ function finishMilman() {
     if(!validateGroup('m', 14, 8)) return;
     switchStep('step-milman', 'step-ipl');
     renderIPL();
+    updateProgress();
 }
-function prevMilman() { switchStep('step-milman', 'step-bratus'); saveStateToLocal(); }
+function prevMilman() { switchStep('step-milman', 'step-bratus'); saveStateToLocal(); updateProgress(); }
 
 function renderIPL() {
     const c = document.getElementById('ipl-container');
@@ -492,7 +549,7 @@ function renderIPL() {
     updateProgress();
 }
 function saveI(i, v) { state.ipl[i] = v; document.getElementById('row_ipl_'+i).classList.remove('highlight-error'); saveStateToLocal(); }
-function prevIPL() { switchStep('step-ipl', 'step-milman'); saveStateToLocal(); }
+function prevIPL() { switchStep('step-ipl', 'step-milman'); saveStateToLocal(); updateProgress(); }
 
 // --- ФИНАЛ ---
 function finishSurvey(skipFetch = false) {
@@ -506,10 +563,12 @@ function finishSurvey(skipFetch = false) {
         switchStep('step-ipl', 'step-results'); 
         switchStep('step-form', 'step-results'); 
         calculateAndShowResults(true);
+        updateProgress();
         return;
     }
 
     switchStep('step-ipl', 'step-loading');
+     updateProgress();
     
     const isDev = state.meta.mode === 'dev';
 
@@ -639,4 +698,5 @@ function validateGroup(prefix, c1, c2) {
 </script>
 </body>
 </html>
+
 
