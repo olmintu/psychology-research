@@ -1,0 +1,78 @@
+ <style>
+        :root { --primary: #3498db; --success: #27ae60; --warning: #f39c12; --error: #e74c3c; --bg: #f4f6f8; --info-bg: #ebf5fb; --gray: #95a5a6; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg); color: #333; margin: 0; padding: 15px; line-height: 1.5; }
+        
+        .container { max-width: 900px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        
+        h1 { font-size: 1.6rem; text-align: center; color: #2c3e50; margin-bottom: 10px; }
+        h2 { font-size: 1.3rem; color: #34495e; margin-top: 0; text-align: center; margin-bottom: 15px; }
+        h3 { color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 5px; margin-top: 30px; }
+        
+        .instruction { background-color: var(--info-bg); border-left: 5px solid var(--primary); padding: 15px; border-radius: 4px; margin-bottom: 25px; font-size: 0.95rem; color: #2c3e50; line-height: 1.6; }
+        .instruction ul { margin: 5px 0 10px 20px; padding: 0; }
+        
+        .anon-switch { background: #fff3cd; border: 1px solid #ffeeba; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: flex-start; gap: 10px; }
+        .anon-switch input { width: 20px; height: 20px; margin-top: 3px; }
+        .anon-warning { font-size: 0.85em; color: #856404; margin-top: 5px; display: none; }
+        
+        .step { display: none; opacity: 0; transition: opacity 0.3s ease; }
+        .step.active { display: block; opacity: 1; }
+        
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.9rem; color: #555; }
+        input[type="text"], input[type="number"], select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; background: #fff; appearance: none; }
+        input:disabled, select:disabled { background-color: #f9f9f9; color: #aaa; border-color: #eee; }
+        
+        .btn-container { display: flex; gap: 15px; margin-top: 25px; }
+        .btn { flex: 1; padding: 16px; border: none; border-radius: 10px; font-size: 17px; font-weight: 600; cursor: pointer; transition: transform 0.1s; color: white; }
+        .btn:active { transform: scale(0.98); opacity: 0.9; }
+        .btn-next { background-color: var(--primary); }
+        .btn-back { background-color: var(--gray); }
+        .btn-success { background-color: var(--success); }
+        .btn-secondary { background-color: #95a5a6; margin-top: 10px; width: 100%; padding: 12px; }
+        
+        .option-card { border: 2px solid #eee; padding: 12px; margin-bottom: 8px; border-radius: 10px; display: flex; align-items: center; cursor: pointer; transition: all 0.2s; background: #fff; }
+        .option-card input { width: 22px; height: 22px; margin-right: 15px; flex-shrink: 0; }
+        .option-card.checked { border-color: var(--primary); background-color: #f0f9ff; }
+
+        .error-msg { color: #fff; background: var(--error); padding: 12px; border-radius: 8px; margin-top: 20px; text-align: center; display: none; font-weight: bold; }
+        .highlight-error { border: 2px solid var(--error) !important; background-color: #fff5f5 !important; }
+
+        table { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
+        th, td { padding: 12px; text-align: center; border-bottom: 1px solid #eee; vertical-align: middle; }
+        th { background: #f8f9fa; font-size: 0.85rem; color: #333; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        td:first-child { text-align: left; font-weight: 500; font-size: 0.95rem; width: 45%; }
+        
+        .res-block { background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .score-badge { display: inline-block; padding: 5px 10px; border-radius: 15px; font-weight: bold; font-size: 0.9em; }
+        .bg-green { background: #d4edda; color: #155724; }
+        .bg-red { background: #f8d7da; color: #721c24; }
+        .bg-blue { background: #d1ecf1; color: #0c5460; }
+        canvas { max-height: 300px; margin-top: 15px; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .dl-section { background: #f0f7fb; border: 2px dashed #3498db; padding: 20px; text-align: center; border-radius: 10px; margin-bottom: 30px; }
+        #result-area { width: 100%; height: 80px; margin-top: 10px; font-size: 12px; padding: 10px; border: 1px solid #ddd; display: none; }
+
+        /* DEV TOOLS */
+        #dev-panel { display: none; background: #333; color: #fff; padding: 15px; border-radius: 8px; margin-top: 15px; }
+        #dev-json-input { width: 100%; height: 100px; margin-top: 10px; font-family: monospace; font-size: 12px; color: #333; }
+        .dev-btn { background: #555; border: 1px solid #777; color: white; padding: 8px 15px; cursor: pointer; border-radius: 4px; font-size: 0.9em; margin-right: 10px; }
+        .dev-btn:hover { background: #666; }
+
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            th { font-size: 0.7rem; padding: 5px; }
+            td { padding: 10px 2px; }
+            td:first-child { font-size: 0.9rem; width: 100%; display: block; border-bottom: none; padding-bottom: 5px; color: var(--primary); font-weight: 600; }
+            tr { display: block; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 10px; }
+            td:not(:first-child) { display: inline-block; width: 22%; border: none; }
+            thead { display: none; } 
+            td:not(:first-child)::before { content: attr(data-label); display: block; font-size: 0.7em; color: #888; margin-bottom: 5px; }
+            input[type="radio"] { width: 24px; height: 24px; margin: 0; }
+        }
+        
+        .progress-bar { height: 6px; background: #e9ecef; border-radius: 3px; margin-bottom: 20px; }
+        .progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.3s; }
+    </style>
