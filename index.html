@@ -302,68 +302,15 @@ function restoreForm() {
     toggleWorkPlace(); toggleEduBlock();
 }
 
-// --- PROGRESS BAR ---    
 function updateProgress() {
-    const totalSteps = 11; // Анкета + 8 рангов + Мильман + IPL
-    
     let current = 0;
-    const activeStep = document.querySelector('.step.active').id;
+    if (document.getElementById('step-bratus').classList.contains('active')) current = state.rank;
+    else if (document.getElementById('step-milman').classList.contains('active')) current = 9;
+    else if (document.getElementById('step-ipl').classList.contains('active')) current = 10;
+    else if (document.getElementById('step-results').classList.contains('active')) current = 11;
     
-    switch(activeStep) {
-        case 'step-form':
-            // Проверяем, заполнена ли анкета
-            const formComplete = checkFormCompletion();
-            current = formComplete ? 1 : 0;
-            break;
-            
-        case 'step-bratus':
-            // Анкета (1) + пройденные ранги
-            current = 1 + (state.rank - 1);
-            break;
-            
-        case 'step-milman':
-            // Анкета (1) + все 8 рангов (8) = 9
-            current = 9;
-            break;
-            
-        case 'step-ipl':
-            // Анкета (1) + ранги (8) + Мильман (1) = 10
-            current = 10;
-            break;
-            
-        case 'step-loading':
-        case 'step-results':
-            current = 11;
-            break;
-            
-        default:
-            current = 0;
-    }
-    
-    // Расчет процентов (от 0 до 100)
-    const progressPercent = Math.min(100, (current / totalSteps) * 100);
-    document.querySelector('.progress-fill').style.width = progressPercent + "%";
-    
-    console.log(`Active: ${activeStep}, Step: ${current}/${totalSteps}, Progress: ${progressPercent}%`);
-}
-
-// Вспомогательная функция для проверки заполнения анкеты
-function checkFormCompletion() {
-    if (document.getElementById('anon_mode').checked) return true;
-    
-    const requiredFields = [
-        'fio', 'gender', 'age', 'family_status', 
-        'children', 'is_working', 'has_secondary_edu', 'edu_status'
-    ];
-    
-    for (const fieldId of requiredFields) {
-        const element = document.getElementById(fieldId);
-        if (!element || !element.value.trim()) {
-            return false;
-        }
-    }
-    
-    return true;
+    let pct = Math.min(100, (current / 11) * 100);
+    document.querySelector('.progress-fill').style.width = pct + "%";
 }
 
 // --- GOD MODE (DEV) ---
@@ -692,5 +639,4 @@ function validateGroup(prefix, c1, c2) {
 </script>
 </body>
 </html>
-
 
