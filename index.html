@@ -265,12 +265,18 @@
 <button class="btn btn-secondary" onclick="toggleDetails('detailsMilman')">
     📖 Подробнее 
 </button>
+<div id="emoWarningBlock" style="display:none; margin-bottom:15px; padding:12px; border:1px solid #e0c97f; background:#fffbe6; border-radius:8px; font-size:0.95em;">
+</div>
 <div id="detailsMilman" style="display:none; margin-top:15px; font-size:0.9em; line-height:1.6;">
     <h3>Жизнь: Идеал и Реальность</h3>
     <canvas id="chartMilmanLife" height="200"></canvas>
   
     <h3 style="margin-top:30px">Работа / Учёба: Идеал и Реальность</h3>
     <canvas id="chartMilmanWork" height="200"></canvas>
+
+    <h3 style="margin-top:30px">Эмоциональный профиль</h3>
+<canvas id="chartMilmanEmo" height="200"></canvas>
+
 </div>
 
         </div>
@@ -633,7 +639,8 @@ let m_scores = {
   }
 };
    // Эмоциональный профиль
-   let emo = { E_st:0, E_ast:0, F_st:0, F_ast:0 };
+   window.emo = { E_st:0, E_ast:0, F_st:0, F_ast:0 };
+let emo = window.emo;
 
 // Подсчёт Мильмана
 for(let q = 0; q < 14; q++) {
@@ -672,8 +679,8 @@ for(let q = 0; q < 14; q++) {
         }
     }
 }
-
-   let emoTypeText = "Не определён. Не удаётся однозначно отнести профиль к одному из типов";
+   let emoIsUndefined = false;
+   let emoTypeText = "<span class='score-badge bg-blue'>Не определён</span> Не удаётся однозначно отнести профиль к одному из типов";
 
 if (emo.E_st > emo.E_ast && emo.F_st > emo.F_ast) {
     emoTypeText = "<span class='score-badge bg-blue'>Стенический</span> — деятельный и устойчивый тип. Вы не только предпочитаете активные, бодрые эмоции, но и в трудных ситуациях действуете собранно, конструктивно и не падаете духом. Стресс вас мобилизует.";
@@ -687,8 +694,27 @@ else if (emo.E_ast > emo.E_st && emo.F_st > emo.F_ast) {
 else if (emo.E_st > emo.E_ast && emo.F_ast > emo.F_st) {
     emoTypeText = "<span class='score-badge bg-blue'>Смешанный астенический</span> Вы эмоционально активный и энергичный человек в повседневности. Однако в ситуациях давления, конфликтов или неудач эта энергия может смениться растерянностью, раздражением или обидой. Вам нужно учиться направлять свою активную энергию на преодоление трудностей.";
 }
+else {
+    emoIsUndefined = true;
+}
+window.emoIsUndefined = emoIsUndefined;
+window.emoTypeText = emoTypeText;
+const warning = document.getElementById("emoWarningBlock");
 
+if (emoTypeText === "<span class='score-badge bg-blue'>Не определён</span> Не удаётся однозначно отнести профиль к одному из типов") {
+    warning.style.display = "block";
+    warning.innerHTML = `
+<b>⚠️ Почему тип вашего эмоционального профиля не определился?</b><br><br>
+Тест сравнивает два параметра: обычное эмоциональное состояние и реакцию на стресс.  
+В вашем случае баллы по одному или обоим параметрам оказались равными, поэтому невозможно определить, какой стиль преобладает.<br><br>
 
+<b>Это не ошибка.</b> Это означает, что ваш профиль находится в балансе или вы гибко реагируете в разных ситуациях. Для точного определения можно пройти тест повторно через время или обратиться к психологу для более глубокого анализа.
+
+Это нормальный результат, который просто выходит за рамки упрощенной классификации.
+`;
+} else {
+    warning.style.display = "none";
+}
 // ===== ДАННЫЕ ДЛЯ ГРАФИКОВ МИЛЬМАНА =====
 
 const scales_order = ['P','K','S','O','D','DR','OD'];
@@ -857,7 +883,6 @@ document.getElementById('textMilman').innerHTML = `
         <div><b>Тип мотивационного профиля:</b> ${motivationTypeText}</div>
         <div><p>   </p> </div>
         <div><b>Тип эмоционального профиля:</b> ${emoTypeText}</div>
-
     </div>
 `;
 
@@ -968,53 +993,60 @@ function renderMilmanDetailedCharts() {
                     }
                 ]
             },
-            options: {
-                responsive: true,
-                scales: { y: { min: 0 } }
+            options: { responsive: true, scales: { y: { min: 0 } }
             }
         });
     }
-    renderMilmanEmoChart(emo);
+    // ===== ЭМОЦИОНАЛЬНЫЙ ПРОФИЛЬ (ПО МИЛЬМАНУ) =====
+
+if (window.chartMilmanEmo && typeof window.chartMilmanEmo.destroy === "function") {
+    window.chartMilmanEmo.destroy();
 }
-function renderMilmanEmoChart(emo) {
-    const labels = [
-        'Эст (стенические эмоции)',
-        'Эаст (астенические эмоции)',
-        'Фст (фрустрация стеническая)',
-        'Фаст (фрустрация астеническая)'
-    ];
 
-    const data = [
-        emo.E_st,
-        emo.E_ast,
-        emo.F_st,
-        emo.F_ast
-    ];
+const ctxEmo = document.getElementById("chartMilmanEmo");
+if (ctxEmo) {
 
-    if (window.chartMilmanEmo && typeof window.chartMilmanEmo.destroy === 'function') {
-        window.chartMilmanEmo.destroy();
-    }
+    const labels = ["Обычное состояние", "Стрессовая ситуация"];
 
-    window.chartMilmanEmo = new Chart(
-        document.getElementById('chartMilmanEmo').getContext('2d'),
-        {
-            type: 'bar',
-            data: {
-                labels,
-                datasets: [{
-                    label: 'Выраженность',
-                    data
-                }]
+    window.chartMilmanEmo = new Chart(ctxEmo.getContext("2d"), {
+        type: "line",
+        data: {
+            labels,
+            datasets: [
+                {
+                    label: "Стенические реакции (активные)",
+                    data: [ emo.E_st, emo.F_st ],
+                    borderWidth: 3,
+                    tension: 0,
+                    fill: false
+                },
+                {
+                    label: "Астенические реакции (пассивные)",
+                    data: [ emo.E_ast, emo.F_ast ],
+                    borderWidth: 3,
+                    tension: 0,
+                    fill: false
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: true }
             },
-            options: {
-                scales: {
-                    y: { min: 0 }
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    suggestedMax: Math.max(
+                        emo.E_ast, emo.E_st, emo.F_ast, emo.F_st
+                    ) + 1
                 }
             }
         }
-    );
+    });
 }
+}
+
 </script>
 </body>
 </html>
-
