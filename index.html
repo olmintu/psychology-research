@@ -676,7 +676,7 @@ for(let q = 0; q < 14; q++) {
    let emoTypeText = "Не определён. Не удаётся однозначно отнести профиль к одному из типов";
 
 if (emo.E_st > emo.E_ast && emo.F_st > emo.F_ast) {
-    emoTypeText = "<span class='score-badge bg-blue'>Стенический</span> ";
+    emoTypeText = "<span class='score-badge bg-blue'>Стенический</span> — деятельный и устойчивый тип. Вы не только предпочитаете активные, бодрые эмоции, но и в трудных ситуациях действуете собранно, конструктивно и не падаете духом. Стресс вас мобилизует.";
 }
 else if (emo.E_ast > emo.E_st && emo.F_ast > emo.F_st) {
     emoTypeText = "<span class='score-badge bg-blue'>Астенический</span> — чувствительный тип, стремящийся к гармонии и покою. Вы предпочитаете спокойные, приятные эмоции, а в стрессе склонны переживать, раздражаться или чувствовать беспомощность. Вам следует избегать перегрузок.";
@@ -1017,3 +1017,4 @@ function renderMilmanEmoChart(emo) {
 </script>
 </body>
 </html>
+
