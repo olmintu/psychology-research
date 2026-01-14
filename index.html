@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <title>Психологическое исследование</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <style>
         :root { --primary: #3498db; --success: #27ae60; --warning: #f39c12; --error: #e74c3c; --bg: #f4f6f8; --info-bg: #ebf5fb; --gray: #95a5a6; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg); color: #333; margin: 0; padding: 15px; line-height: 1.5; }
@@ -88,6 +89,8 @@
             input[type="radio"] { width: 24px; height: 24px; margin: 0; }
         }
         
+        
+
         .progress-bar { height: 6px; background: #e9ecef; border-radius: 3px; margin-bottom: 20px; }
         .progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.3s; }
     </style>
@@ -153,8 +156,8 @@
             <div class="form-group"><label>ВУЗ: <span class="req">*</span></label><input type="text" id="university" onchange="saveStateToLocal()"></div>
             <div class="form-group"><label>Специальность: <span class="req">*</span></label><input type="text" id="speciality" onchange="saveStateToLocal()"></div>
             <div style="display: flex; gap: 10px;">
-                 <div class="form-group" style="flex: 1;"><label>Уровень: <span class="req">*</span></label><select id="edu_level" onchange="saveStateToLocal()"><option value="Бакалавриат">Бакалавриат</option><option value="Магистратура">Магистратура</option><option value="Специалитет">Специалитет</option></select></div>
-                 <div class="form-group" style="flex: 1;"><label>Основа: <span class="req">*</span></label><select id="edu_basis" onchange="saveStateToLocal()"><option value="Бюджет">Бюджет</option><option value="Платное">Платное</option></select></div>
+            <div class="form-group" style="flex: 1;"><label>Уровень: <span class="req">*</span></label><select id="edu_level" onchange="saveStateToLocal()"><option value="Бакалавриат">Бакалавриат</option><option value="Магистратура">Магистратура</option><option value="Специалитет">Специалитет</option></select></div>
+            <div class="form-group" style="flex: 1;"><label>Основа: <span class="req">*</span></label><select id="edu_basis" onchange="saveStateToLocal()"><option value="Бюджет">Бюджет</option><option value="Платное">Платное</option></select></div>
             </div>
             <div class="form-group" id="course_block"><label>Курс: <span class="req">*</span></label><select id="course" onchange="saveStateToLocal()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
         </div>
@@ -220,22 +223,14 @@
             <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
                 <button class="btn btn-success" style="flex:0 0 auto; min-width:200px;" onclick="downloadJSON()">📥 Скачать файл</button>
                 <button class="btn btn-secondary" style="flex:0 0 auto; min-width:200px; margin-top:0;" onclick="copyResult()">📋 Скопировать текст</button>
+                
             </div>
             <textarea id="result-area" readonly></textarea>
             <p id="copy-msg" style="color:var(--success); display:none; font-weight:bold; margin-top:5px;">Скопировано!</p>
         </div>
 
         <h2 style="margin-top:40px;">📊 Интерпретация результатов</h2>
-        <div style="
-    background:#fff3cd;
-    border:1px solid #ffeeba;
-    color:#856404;
-    padding:15px;
-    border-radius:8px;
-    margin-bottom:25px;
-    font-size:0.95em;
-    line-height:1.6;
-">
+        <div style="background:#fff3cd;border:1px solid #ffeeba;color:#856404;padding:15px;border-radius:8px;margin-bottom:25px;font-size:0.95em;line-height:1.6;">
     <b>Внимание!</b> Результаты и интерпретации, полученные без участия специалистов, не следует воспринимать слишком серьезно.
     Диагностическую ценность имеют только исследования, проведенные профессиональным психологом.
 </div>
@@ -621,11 +616,19 @@ function calculateAndShowResults(immediate = false) {
     const cats_map = { 'Альтруистические': [1,9,17], 'Экзистенциальные': [2,10,18], 'Гедонистические': [3,11,19], 'Самореализации': [4,12,20], 'Статусные': [5,13,21], 'Коммуникативные': [6,14,22], 'Семейные': [7,15,23], 'Когнитивные': [8,16,24] };
     let b_labels=[], b_data=[], b_desc="";
     let id_to_rank = {}; for(let r in state.bratus) state.bratus[r].forEach(id => id_to_rank[id] = parseInt(r));
+    // Создаем массив для сортировки: [{name, sum, status}, ...]
+    let categories = [];
     for(let c in cats_map) { 
         let sum = 0; cats_map[c].forEach(id => sum += (id_to_rank[id] || 0)); 
         b_labels.push(c); b_data.push(sum);
         let status = sum <= 9 ? "<span style='color:green'>Доминируют</span>" : (sum <= 17 ? "Представлены достаточно" : "<span style='color:red'>Представлены слабо</span>");
-        b_desc += `<div><b>${c}:</b> ${sum} (${status})</div>`;
+        categories.push({name: c, sum: sum, status: status});
+    }
+    // Сортируем категории по значению (от меньшего к большему)
+    categories.sort((a, b) => a.sum - b.sum);
+    // Формируем b_desc в отсортированном порядке
+    for(let cat of categories) {
+        b_desc += `<div><b>${cat.name}:</b> ${cat.sum} (${cat.status})</div>`;
     }
 
     // 2. МИЛЬМАН
@@ -1209,7 +1212,11 @@ let styleHTML = `<div style="
     background:#f8f9fa;
     border:1px solid #ddd;
 ">`;
-
+// Если стиль не определен, изменяем стиль фона
+if(!iplStyleDefined) {
+    styleHTML = styleHTML.replace('background:#f8f9fa;', 'background:#fff3cd;')
+                         .replace('border:1px solid #ddd;', 'border:1px solid #ffeeba;');
+}
 styleHTML += `<h2 style="margin-top:0;">🧬 Стиль реализации инновационного потенциала</h2>`;
 
 if (!iplStyleDefined) {
@@ -1295,7 +1302,11 @@ let aspectTypeHTML = `
 ">
     <h2 style="margin-top:0;">🧠 Особенности доминирования инновационных возможностей</h2>
 `;
-
+// Если аспекты не определены, изменяем стиль фона
+if(!aspectsDefined) {
+    aspectTypeHTML = aspectTypeHTML.replace('background:#f8f9fa;', 'background:#fff3cd;')
+                                   .replace('border:1px solid #ddd;', 'border:1px solid #ffeeba;');
+}
 if (!aspectsDefined) {
     
     aspectTypeHTML += `
@@ -1352,6 +1363,7 @@ function copyResult() {
     document.execCommand('copy'); 
     document.getElementById('copy-msg').style.display = 'block'; 
 }
+
 function validateGroup(prefix, c1, c2) {
     let err = null; let cont = prefix==='m'?state.milman:state.ipl;
     if(c2===1) { for(let i=0;i<c1;i++) if(!cont[i]) { err=document.getElementById('row_ipl_'+i); err.classList.add('highlight-error'); break; } }
@@ -1373,7 +1385,6 @@ function toggleDetails(id) {
         renderMilmanDetailedCharts();
     }
 }
-
 function renderMilmanDetailedCharts() {
     if (!window.milmanData) {
         console.warn("Нет данных Мильмана для отрисовки");
@@ -1491,6 +1502,7 @@ if (ctxEmo) {
 }
 }
 
+    
 </script>
 </body>
 </html>
