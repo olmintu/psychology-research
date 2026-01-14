@@ -621,11 +621,21 @@ function calculateAndShowResults(immediate = false) {
     const cats_map = { 'Альтруистические': [1,9,17], 'Экзистенциальные': [2,10,18], 'Гедонистические': [3,11,19], 'Самореализации': [4,12,20], 'Статусные': [5,13,21], 'Коммуникативные': [6,14,22], 'Семейные': [7,15,23], 'Когнитивные': [8,16,24] };
     let b_labels=[], b_data=[], b_desc="";
     let id_to_rank = {}; for(let r in state.bratus) state.bratus[r].forEach(id => id_to_rank[id] = parseInt(r));
+    // Создаем массив для сортировки: [{name, sum, status}, ...]
+    let categories = [];
     for(let c in cats_map) { 
         let sum = 0; cats_map[c].forEach(id => sum += (id_to_rank[id] || 0)); 
         b_labels.push(c); b_data.push(sum);
         let status = sum <= 9 ? "<span style='color:green'>Доминируют</span>" : (sum <= 17 ? "Представлены достаточно" : "<span style='color:red'>Представлены слабо</span>");
-        b_desc += `<div><b>${c}:</b> ${sum} (${status})</div>`;
+        categories.push({name: c, sum: sum, status: status});
+    }
+    
+    // Сортируем категории по значению (от меньшего к большему)
+    categories.sort((a, b) => a.sum - b.sum);
+    
+    // Формируем b_desc в отсортированном порядке
+    for(let cat of categories) {
+        b_desc += `<div><b>${cat.name}:</b> ${cat.sum} (${cat.status})</div>`;
     }
 
     // 2. МИЛЬМАН

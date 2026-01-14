@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Тест сортировки</title>
+</head>
+<body>
+    <h1>Тест сортировки категорий по значению</h1>
+    <div id="result"></div>
+
+    <script>
+        // Имитация данных из примера
+        const testData = [
+            {name: 'Альтруистические', sum: 12, status: 'Представлены достаточно'},
+            {name: 'Экзистенциальные', sum: 9, status: 'Доминируют'},
+            {name: 'Гедонистические', sum: 19, status: 'Представлены слабо'},
+            {name: 'Самореализации', sum: 14, status: 'Представлены достаточно'},
+            {name: 'Статусные', sum: 17, status: 'Представлены достаточно'},
+            {name: 'Коммуникативные', sum: 15, status: 'Представлены достаточно'},
+            {name: 'Семейные', sum: 13, status: 'Представлены достаточно'},
+            {name: 'Когнитивные', sum: 9, status: 'Доминируют'}
+        ];
+
+        // Сортируем по значению (от меньшего к большему)
+        testData.sort((a, b) => a.sum - b.sum);
+
+        // Формируем результат
+        let resultHtml = '';
+        for(let cat of testData) {
+            resultHtml += `<div><b>${cat.name}:</b> ${cat.sum} (${cat.status})</div>`;
+        }
+
+        document.getElementById('result').innerHTML = resultHtml;
+        
+        console.log('Результат сортировки:', testData);
+    </script>
+</body>
+</html>
