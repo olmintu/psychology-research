@@ -1219,6 +1219,12 @@ let styleHTML = `<div style="
     background:#f8f9fa;
     border:1px solid #ddd;
 ">`;
+    
+// Если стиль не определен, изменяем стиль фона
+if(!iplStyleDefined) {
+    styleHTML = styleHTML.replace('background:#f8f9fa;', 'background:#fff3cd;')
+                         .replace('border:1px solid #ddd;', 'border:1px solid #ffeeba;');
+}
 
 styleHTML += `<h2 style="margin-top:0;">🧬 Стиль реализации инновационного потенциала</h2>`;
 
@@ -1305,6 +1311,12 @@ let aspectTypeHTML = `
 ">
     <h2 style="margin-top:0;">🧠 Особенности доминирования инновационных возможностей</h2>
 `;
+
+// Если аспекты не определены, изменяем стиль фона
+if(!aspectsDefined) {
+    aspectTypeHTML = aspectTypeHTML.replace('background:#f8f9fa;', 'background:#fff3cd;')
+                                   .replace('border:1px solid #ddd;', 'border:1px solid #ffeeba;');
+}
 
 if (!aspectsDefined) {
     
