@@ -61,7 +61,15 @@
         
         .dl-section { background: #f0f7fb; border: 2px dashed #3498db; padding: 20px; text-align: center; border-radius: 10px; margin-bottom: 30px; }
         #result-area { width: 100%; height: 80px; margin-top: 10px; font-size: 12px; padding: 10px; border: 1px solid #ddd; display: none; }
-
+        /*arrows for the "learn more" button */
+        .detail-arrow svg {vertical-align: middle;transition: transform 0.25s ease;transform-origin: center; }
+        .detail-arrow {display: inline-block;margin-left: 6px;transition: transform 0.25s ease;}
+       /* Поворот стрелки, когда блок открыт */
+        .toggle-details[aria-expanded="true"] 
+        .detail-arrow {transform: rotate(180deg);}
+        .detail-arrow svg {transform: rotate(180deg);}
+       /* Лёгкий ховер-эффект — затемнение фона (в духе flat-стиля) */
+       .btn-secondary:hover {background-color: #7f8c8d; /* немного темнее #95a5a6 */}
         /* DEV TOOLS */
         #dev-panel { display: none; background: #333; color: #fff; padding: 15px; border-radius: 8px; margin-top: 15px; }
         #dev-json-input { width: 100%; height: 100px; margin-top: 10px; font-family: monospace; font-size: 12px; color: #333; }
@@ -83,6 +91,12 @@
         .progress-bar { height: 6px; background: #e9ecef; border-radius: 3px; margin-bottom: 20px; }
         .progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.3s; }
     </style>
+    <link rel="icon" href="icons/favicon.ico" sizes="any">
+    <link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="icons/favicon-16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png">
+    <link rel="manifest" href="site.webmanifest">
 </head>
 <body>
 
@@ -231,9 +245,11 @@
            <!-- старый график Братуся отключён -->
             <div id="chartBratus" style="display:none;"></div>
             <div id="textBratus" style="margin-top:15px; font-size:0.9em; line-height:1.6;"></div>
-
-            <button class="btn btn-secondary" onclick="toggleDetails('detailsBratus')">
-                📖 Подробнее 
+            
+            <button class="btn btn-secondary toggle-details" data-target="detailsBratus" onclick="toggleDetails('detailsBratus')"> 
+                Подробнее <span class="detail-arrow"><svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 7 L6 1 L11 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                  </span>
             </button>
             <div id="detailsBratus" style="display:none; margin-top:15px; font-size:0.9em; line-height:1.6;">
             <p>В зависимости от полученной суммы по каждой из категорий, вы можете оценить представленность каждой из категорий в вашей личной системе жизненных смыслов.</p>
@@ -262,9 +278,10 @@
             <canvas id="chartMilman"></canvas>
             <div id="textMilman" style="margin-top:15px;"></div>
 
-<button class="btn btn-secondary" onclick="toggleDetails('detailsMilman')">
-    📖 Подробнее 
-</button>
+            <button class="btn btn-secondary toggle-details" data-target="detailsMilman" onclick="toggleDetails('detailsMilman')">
+                Подробнее <span class="detail-arrow"><svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 7 L6 1 L11 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </button>
 <div id="emoWarningBlock" style="display:none; margin-bottom:15px; padding:12px; border:1px solid #e0c97f; background:#fffbe6; border-radius:8px; font-size:0.95em;">
 </div>
 <div id="detailsMilman" style="display:none; margin-top:15px; font-size:0.9em; line-height:1.6;">
@@ -283,12 +300,12 @@
 
         <div class="res-block">
             <h3>3. Инновационный потенциал личности</h3>
-              <div id="iplDetails"></div>
+            <div id="iplDetails"></div>
             <div id="textIPL"></div>
-
-<button class="btn btn-secondary" onclick="toggleDetails('detailsIPL')">
-    📖 Подробнее 
-</button>
+            <button class="btn btn-secondary toggle-details" data-target="detailsIPL" onclick="toggleDetails('detailsIPL')">
+                Подробнее <span class="detail-arrow"><svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 7 L6 1 L11 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            </button>
 <div id="detailsIPL" style="display:none; margin-top:15px; font-size:0.9em; line-height:1.6;"></div>
 
         </div>
@@ -1014,7 +1031,7 @@ function renderIPLTypesPairs(ipl_types) {
 
         let note = "";
         if (isEqual) {
-            note = `<div style="margin-top:6px; font-size:0.85em; color:#555;">⚖️ Различия не выявлены</div>`;
+            note = `<div style="margin-top:6px; font-size:1.2em; color:#555;">⚠️ Различия не выявлены</div>`;
         }
 
         return `
@@ -1149,7 +1166,7 @@ document.getElementById('textMilman').innerHTML = `
         Выше показан <b>обобщённый профиль мотивации</b>: сравнение идеального и реального.
         Подробные профили (жизнь, работа, эмоции) см. во вкладке «Подробнее».
         <div style="margin-top:15px; border-top:1px solid #eee; padding-top:10px;">
-        <div><b>Тип мотивационного профиля:</b> ${motivationTypeText}</div>
+        <div><b>Общий тип мотивационного профиля:</b> ${motivationTypeText}</div>
         <div><p>   </p> </div>
         <div><b>Тип эмоционального профиля:</b> ${emoTypeText}</div>
     </div>
@@ -1198,10 +1215,10 @@ styleHTML += `<h2 style="margin-top:0;">🧬 Стиль реализации и�
 if (!iplStyleDefined) {
     styleHTML += `
         <div style="font-size:1.05em;">
-            <b>Стиль не может быть определён.</b><br><br>
+            <b>⚠️ Стиль не может быть определён.</b><br><br>
             В одной или нескольких парах показателей значения оказались равными, поэтому невозможно выбрать доминирующий тип.
             Это означает баланс или смешанный профиль, либо ситуацию, когда разные стратегии выражены одинаково сильно.<br><br>
-            <i>Это не ошибка и не «плохой результат». Такой профиль говорит о гибкости или неопределённости стратегии в текущий период жизни.</i>
+            <i>Это не ошибка и не «плохой результат». Такой профиль говорит о гибкости или неопределённости стратегии в текущий период жизни. Для точного определения можно обратиться к специалисту для более глубокого анализа.</i>
         </div>
     `;
 } else {
@@ -1280,10 +1297,13 @@ let aspectTypeHTML = `
 `;
 
 if (!aspectsDefined) {
+    
     aspectTypeHTML += `
         <div style="font-size:1.05em;">
-            <b>Тип доминирования не может быть определён.</b><br><br>
+            <b>⚠️ Тип доминирования не может быть определён.</b><br><br>
             Значения аспектов оказались равными или слишком близкими, поэтому невозможно однозначно выделить доминирующий, субдоминантный и фоновый компоненты.
+            Для точного определения можно обратиться к специалисту для более глубокого анализа.<br><br>
+            Это нормальный результат, который просто выходит за рамки автоматической классификации.
         </div>
     `;
 } else {
@@ -1342,10 +1362,13 @@ function validateGroup(prefix, c1, c2) {
 function toggleDetails(id) {
     const el = document.getElementById(id);
     if (!el) return;
-
     const isOpening = (el.style.display === 'none' || el.style.display === '');
     el.style.display = isOpening ? 'block' : 'none';
-
+    // Обновляем состояние кнопки
+    const button = document.querySelector(`[data-target="${id}"]`);
+    if (button) {
+        button.setAttribute('aria-expanded', isOpening ? 'true' : 'false');
+    }
     if (isOpening && id === 'detailsMilman') {
         renderMilmanDetailedCharts();
     }
