@@ -631,8 +631,23 @@ function calculateAndShowResults(immediate = false) {
         b_desc += `<div><b>${cat.name}:</b> ${cat.sum} (${cat.status})</div>`;
     }
 
-    // 2. МИЛЬМАН
-    const m_keys = [ ['P','P','O','D','OD','S','DR','DR'], ['P','K','K','S','S','DR','DR','OD'], ['P','K','O','OD','OD','-','D','P'], ['D','O','OD','D','DR','P','OD','K'], ['P','K','K','OD','DR','DR','OD','P'], ['D','D','O','S','-','DR','OD','P'], ['K','O','S','S','P','DR','DR','O'], ['P','O','S','O','DR','OD','DR','S'], ['K','D','S','S','O','S','D','K'], ['O','OD','P','S','P','OD','DR','-'], ['P','K','K','O','S','S','OD','DR'], ['P','K','K','DR','S','S','OD','P'], ['ast','ast','ast','ast','st','st','st','st'], ['ast','ast','ast','ast','st','st','st','st'] ];
+    // 2. МИЛЬМАН ОБНОВЛЕННАЯ МАТРИЦА КЛЮЧЕЙ (КАНОНИЧЕСКАЯ)
+const m_keys = [
+    ['P', 'P', 'O', 'D', 'OD', 'S', 'DR', 'DR'],                  // Q1
+    ['P', 'K', 'K', 'S', 'S,O', 'DR', 'DR', 'OD'],                // Q2
+    ['P', 'K', 'O', 'D,OD', 'OD', '-', 'D,DR', 'P,D'],            // Q3
+    ['D', 'K,O', 'D,OD', 'D', 'DR', 'P', 'OD', 'K'],              // Q4
+    ['P', 'K', 'K', 'OD', 'DR', 'DR', 'OD', 'P,D'],               // Q5
+    ['D', 'O,D', 'K,O', 'S,D', '-', 'DR', 'OD', 'P'],             // Q6
+    ['K', 'O', 'S', 'S', 'P,D', 'DR', 'DR', 'O'],                 // Q7
+    ['P', 'O', 'S', 'O', 'DR', 'OD', 'DR', 'S'],                  // Q8
+    ['K', 'D', 'S', 'S', 'O', 'S', 'D,OD', 'K,O'],               // Q9
+    ['K,O', 'OD', 'P,D', 'S', 'P', 'OD', 'DR', '-'],              // Q10
+    ['P', 'K', 'K', 'O', 'S,O', 'S,OD', 'OD', 'DR'],              // Q11
+    ['P', 'K', 'K,O', 'DR', 'S', 'S', 'OD', 'P,D'],               // Q12
+    ['ast', 'ast', 'ast', 'ast', 'st', 'st', 'st', 'st'],         // Q13 (Emo)
+    ['ast', 'ast', 'ast', 'ast', 'st', 'st', 'st', 'st']          // Q14 (Frust)
+];
     const sub_map = {
   0:'life_ideal',
   1:'work_ideal',
@@ -664,42 +679,43 @@ let m_scores = {
 let emo = window.emo;
 
 // Подсчёт Мильмана
+// --- НАЧАЛО ОБНОВЛЕННОГО ЦИКЛА ---
 for(let q = 0; q < 14; q++) {
+    // Проходим по всем 8 вариантам ответа
+    for(let i = 0; i < 8; i++) {
+        let val = state.milman[`${q}_${i}`] || 0;
+        let keyString = m_keys[q][i]; // Теперь это может быть "S,O"
+        // Разбиваем ключи по запятой (если их несколько)
+        let targets = keyString.split(',');
+        targets.forEach(scale => {
+            scale = scale.trim(); // Убираем пробелы, если есть
+            if (scale === '-') return; // Пропускаем пустышки
+            if (q < 12) { 
+                // ===== МОТИВАЦИЯ =====
+                let sub = sub_map[q]; 
+                let [scope, state2] = sub.split('_'); 
 
-    if (q < 12) { 
-        // ===== МОТИВАЦИЯ =====
-        let sub = sub_map[q]; // life_ideal, work_real и т.п.
-        let [scope, state2] = sub.split('_'); // life/work , ideal/real
-
-        for(let i = 0; i < 8; i++) {
-            let val = state.milman[`${q}_${i}`] || 0;
-            let scale = m_keys[q][i];
-
-            if(scale !== '-' && m_scores[scope][state2][scale] !== undefined) {
-                m_scores[scope][state2][scale] += val;
+                // Проверяем, существует ли такая шкала (защита от ошибок)
+                if(m_scores[scope][state2][scale] !== undefined) {
+                    m_scores[scope][state2][scale] += val;
+                }
+            } else {
+                // ===== ЭМОЦИИ (Вопросы 12 и 13 по индексу, в методичке это 13 и 14) =====
+                // Здесь двойных ключей нет, но логика остаётся прежней
+                if(q === 12) { 
+                    if(scale === 'st') emo.E_st += val;
+                    if(scale === 'ast') emo.E_ast += val;
+                }
+                if(q === 13) {
+                    if(scale === 'st') emo.F_st += val;
+                    if(scale === 'ast') emo.F_ast += val;
+                }
             }
-        }
-
-    } else {
-        // ===== ЭМОЦИИ =====
-        for(let i = 0; i < 8; i++) {
-            let val = state.milman[`${q}_${i}`] || 0;
-            let scale = m_keys[q][i]; // 'st' или 'ast'
-            
-            if(q === 12) { 
-                // Эмоциональные предпочтения
-                if(scale === 'st') emo.E_st += val;
-                if(scale === 'ast') emo.E_ast += val;
-            }
-
-            if(q === 13) {
-                // Фрустрация
-                if(scale === 'st') emo.F_st += val;
-                if(scale === 'ast') emo.F_ast += val;
-            }
-        }
+        });
     }
 }
+// --- КОНЕЦ ОБНОВЛЕННОГО ЦИКЛА ---
+
    let emoIsUndefined = false;
    let emoTypeText = "<span class='score-badge bg-blue'>Не определён</span> Не удаётся однозначно отнести профиль к одному из типов";
 
