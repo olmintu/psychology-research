@@ -553,10 +553,10 @@ function renderMilman() {
         q.i.forEach((txt, ii) => {
             let nm = `m_${qi}_${ii}`;
             h += `<tr id="row_${nm}"><td>${txt}</td>
-            <td data-label="++ (Да)"><input type="radio" name="${nm}" value="3" onclick="saveM('${nm}',3)"></td>
-            <td data-label="+ (Пожалуй)"><input type="radio" name="${nm}" value="2" onclick="saveM('${nm}',2)"></td>
-            <td data-label="= (Когда как)"><input type="radio" name="${nm}" value="1" onclick="saveM('${nm}',1)"></td>
-            <td data-label="- / ? (Нет)"><input type="radio" name="${nm}" value="0" onclick="saveM('${nm}',0)"></td></tr>`;
+            <td data-label="Да"><input type="radio" name="${nm}" value="3" onclick="saveM('${nm}',3)"></td>
+            <td data-label="Пожалуй"><input type="radio" name="${nm}" value="2" onclick="saveM('${nm}',2)"></td>
+            <td data-label="Когда как"><input type="radio" name="${nm}" value="1" onclick="saveM('${nm}',1)"></td>
+            <td data-label="Нет/Не знаю"><input type="radio" name="${nm}" value="0" onclick="saveM('${nm}',0)"></td></tr>`;
         });
         c.innerHTML += h + "</tbody></table></div>";
     });
@@ -2036,3 +2036,4 @@ function getImageDataUrl(url) {
 </script>
 </body>
 </html>
+
