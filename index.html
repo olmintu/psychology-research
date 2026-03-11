@@ -321,8 +321,10 @@ align-items: center;gap: 15px; /* Пространство между текст
                 <div id="detailsMilman" style="display:none; margin-top:15px; font-size:0.9em; line-height:1.6;">
                 <h3>Жизнь: Идеал и Реальность</h3>
                 <canvas id="chartMilmanLife" height="200"></canvas>
+                <div id="textMilmanLife" style="margin-top:10px; margin-bottom:20px;"></div>
                 <h3 style="margin-top:30px">Работа / Учёба: Идеал и Реальность</h3>
                 <canvas id="chartMilmanWork" height="200"></canvas>
+                <div id="textMilmanWork" style="margin-top:10px; margin-bottom:20px;"></div>
                 <h3 style="margin-top:30px">Эмоциональный профиль</h3>
                 <canvas id="chartMilmanEmo" height="200"></canvas>
 </div>
@@ -960,6 +962,7 @@ let integral = {};
 scales_order.forEach((s, i) => {
     integral[s] = integral_ideal_data[i];
 });
+
 // ===== ТИП МОТИВАЦИОННОГО ПРОФИЛЯ (ПО ИНТЕГРАЛУ ИДЕАЛОВ) =====
 
 let sum_develop = integral.D + integral.DR + integral.OD;
@@ -1644,6 +1647,43 @@ document.getElementById("detailsIPL").innerHTML = detailsHTML;
         console.log("CACHE SAVED FIXED!", window.FULL_REPORT_CACHE);
         // ======================================================================
     }, immediate ? 0 : 1000);
+   // --- ДОПОЛНЕНИЕ: Расчет профиля для сфер Жизнь и Работа ---
+   const spheresToProcess = [
+        { scores: m_scores.life.ideal, elementId: 'textMilmanLife', label: 'Жизнь' },
+        { scores: m_scores.work.ideal, elementId: 'textMilmanWork', label: 'Работа / Учёба' }
+    ];
+
+    spheresToProcess.forEach(sphere => {
+        let s = sphere.scores;
+        let s_develop = (s.D || 0) + (s.DR || 0) + (s.OD || 0);
+        let s_maintain = (s.P || 0) + (s.K || 0) + (s.S || 0);
+        let s_diff = s_develop - s_maintain;
+        let s_profileText = "";
+
+        if (s_diff >= 5) {
+            s_profileText = "<span class='score-badge bg-blue'>Прогрессивный</span> Вы — человек роста. Для вас важнее двигаться вперёд, осваивать новое и развиваться, чем просто сохранять текущее положение дел. Это качество часто ведёт к успеху в работе и учёбе.";
+        } else if (s_diff <= -5) {
+            s_profileText = "<span class='score-badge bg-blue'>Регрессивный</span> Для вас главное — стабильность, комфорт и сохранение того, что уже есть. Мотивы «оставить всё как есть» обычно сильнее, чем желание рисковать и меняться. Это может приводить к застою.";
+        } else {
+            const scales = ['P','K','S','O','D','DR','OD'];
+            let values = scales.map(sc => s[sc] || 0);
+            let peaks = 0;
+            for(let i=0; i<values.length; i++) {
+                let v = values[i];
+                if(i===0) { if(v >= values[1]+4) peaks++; }
+                else if(i===values.length-1) { if(v >= values[values.length-2]+4) peaks++; }
+                else { if(v >= values[i-1]+2 && v >= values[i+1]+2) peaks++; }
+            }
+            if (peaks >= 3) {
+                s_profileText = "<span class='score-badge bg-blue'>Импульсивный</span> Ваша мотивация — это внутренние качели. У вас одновременно есть несколько очень сильных, но разных и даже противоречивых желаний. Из-за этого ваши интересы и энергия могут часто и резко переключаться.";
+            } else if (peaks === 2) {
+                s_profileText = "<span class='score-badge bg-blue'>Экспрессивный</span> У вас чёткие приоритеты: вы ярко выделяете что-то важное для себя как в сфере комфорта, так и в сфере достижений. Вы стремитесь к самоутверждению и любите, когда ваши успехи и особенности замечают другие.";
+            } else {
+                s_profileText = "<span class='score-badge bg-blue'>Уплощенный</span> У вас нет ярко выраженных «вершин» или «провалов» среди мотивов — все они выражены примерно одинаково. Это может означать, что пока нет чётких жизненных приоритетов или внутренняя картина желаний недостаточно ясна.";
+            }
+        }
+        document.getElementById(sphere.elementId).innerHTML = `<div><b>Тип мотивационного профиля (${sphere.label}):</b> ${s_profileText}</div>`;
+    });
 }
 // Утилиты
 function switchStep(f, t) { document.getElementById(f).classList.remove('active'); setTimeout(() => document.getElementById(t).classList.add('active'), 200); window.scrollTo(0,0); updateProgress(); }
