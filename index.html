@@ -768,11 +768,26 @@ function finishSurvey(skipFetch = false) {
     switchStep('step-ipl', 'step-loading');
     
     const isDev = state.meta.mode === 'dev';
-
-    if (!isDev) {
-        fetch(GOOGLE_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify(state) })
-        .then(() => { document.getElementById('final-msg').innerHTML = "Данные успешно <b style='color:green'>сохранены в облаке</b> ."; })
-        .catch(() => { document.getElementById('final-msg').innerHTML = "<b style='color:red'>Ошибка отправки!</b> Обязательно сохраните файл."; });
+if (!isDev) {
+        // Создаем глобальную функцию для отправки, чтобы вызывать её по кнопке повторно
+        window.retryCloudSync = function() {
+            document.getElementById('final-msg').innerHTML = "⏳ Отправка данных в облако...";
+            fetch(GOOGLE_URL, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/json" }, body: JSON.stringify(state) })
+            .then(() => { 
+                document.getElementById('final-msg').innerHTML = "Данные успешно <b style='color:green'>сохранены в облаке</b>."; 
+            })
+            .catch(() => { 
+                document.getElementById('final-msg').innerHTML = `
+                    <b style='color:red'>Ошибка отправки!</b> Пожалуйста, проверьте подключение к интернету.<br>
+                    <button class='btn btn-secondary' style='margin-top: 10px; margin-bottom: 10px; width: auto; padding: 8px 15px;' onclick='window.retryCloudSync()'>
+                        ↻ Повторить отправку
+                    </button><br>
+                    <span style='font-size:0.9em; color:#555;'>Если ошибка сохраняется, обязательно скачайте файл ниже.</span>
+                `; 
+            });
+        };
+        // Запускаем первую попытку отправки
+        window.retryCloudSync();
     } else {
         console.log("DEV MODE: Отправка заблокирована.");
         document.getElementById('final-msg').innerHTML = "<b style='color:orange'>[РЕЖИМ РАЗРАБОТЧИКА]</b> Отправка в облако отключена.";
