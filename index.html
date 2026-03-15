@@ -253,18 +253,29 @@ align-items: center;gap: 15px; /* Пространство между текст
         <p id="final-msg" style="text-align:center">Данные обрабатываются...</p>
         
         <div class="dl-section">
-            <h3 style="margin-top:0">📁 Сохраните ваш результат</h3>
-            <p style="font-size:0.9em; margin-bottom:15px">Обязательно сохраните файл или скопируйте текст, чтобы отправить его исследователю.</p>
-            <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
-                <button class="btn btn-success" style="flex:0 0 auto; min-width:200px;" onclick="downloadJSON()">📥 Скачать данные для исследователя (.json)</button>
-                <button class="btn btn-secondary" style="flex:0 0 auto; min-width:200px; margin-top:0;" onclick="copyResult()">📋 Скопировать текст</button>
-                <h3 style="margin-bottom:15px">Скачать полную интерпретацию с графиками и таблицами данных.</h3>
-                <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
-                <button class="btn btn-primary" style="background:#e74c3c; width:auto; padding:12px 25px;" onclick="exportReportPDF()">📄 Скачать PDF отчет </span></button>
-    </div>
+            <h3 style="margin-top:0">📁 Ваши результаты</h3>
+            <p style="font-size:0.9em; margin-bottom:15px; color:#555;">
+                Данные автоматически отправляются исследователю. Для себя вы можете скачать полную интерпретацию с графиками.
+            </p>
+            
+            <div style="display:flex; justify-content:center; margin-bottom:10px;">
+                <button class="btn btn-primary" style="background:#e74c3c; width:auto; padding:12px 25px; font-size: 1.05em;" onclick="exportReportPDF()">
+                    📄 Скачать PDF отчет
+                </button>
             </div>
-            <textarea id="result-area" readonly></textarea>
-            <p id="copy-msg" style="color:var(--success); display:none; font-weight:bold; margin-top:5px;">Скопировано!</p>
+            
+            <details style="margin-top: 15px; text-align: left; background: #fff; padding: 12px; border-radius: 8px; border: 1px solid #ddd;">
+                <summary style="cursor: pointer; font-weight: 600; color: #2c3e50;">⚙️ Резервное сохранение </summary>
+                <p style="font-size: 0.85em; color: #666; margin-top: 10px;">
+                    Используйте эти кнопки <b>только</b> если при отправке в облако произошла ошибка, чтобы передать данные вручную.
+                </p>
+                <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top: 10px;">
+                    <button class="btn btn-success" style="flex:1; padding: 10px; font-size: 0.9em;" onclick="downloadJSON()">📥 Скачать .json</button>
+                    <button class="btn btn-secondary" style="flex:1; padding: 10px; margin-top:0; font-size: 0.9em;" onclick="copyResult()">📋 Скопировать текст</button>
+                </div>
+                <textarea id="result-area" readonly></textarea>
+                <p id="copy-msg" style="color:var(--success); display:none; font-weight:bold; margin-top:5px; text-align:center;">Скопировано!</p>
+            </details>
         </div>
 
         <h2 style="margin-top:40px;">📊 Интерпретация результатов</h2>
