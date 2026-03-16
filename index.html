@@ -117,7 +117,21 @@ align-items: center;gap: 15px; /* Пространство между текст
     <link rel="manifest" href="site.webmanifest">
 </head>
 <body>
-
+    <div id="soft-ask-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1001;">
+        <div class="import-modal-content" style="text-align: left;">
+            <h3 style="color: var(--primary);">Минуточку внимания 🥺</h3>
+            <p style="font-size: 0.95em; color: #555; line-height: 1.5;">
+                Вы выбрали анонимный режим, и <b>мы уважаем ваше решение!</b>
+            </p>
+            <p style="font-size: 0.95em; color: #555; line-height: 1.5;">
+                Однако, для научной ценности этого исследования нам <b>очень важно</b> знать хотя бы ваш <b>Пол</b> и <b>Возраст</b>. Это позволит нам понять, как различаются резуьтаты у разных групп людей, не нарушая вашу анонимность.
+            </p>
+            <div style="display: flex; gap: 10px; margin-top: 25px;">
+                <button class="btn btn-secondary" style="margin-top:0;" onclick="proceedAsCompleteAnon()">Оставить пустым</button>
+                <button class="btn btn-next" style="margin-top:0;" onclick="closeSoftAskAndFill()">Заполнить данные</button>
+            </div>
+        </div>
+    </div>
 <div class="container">
 
     <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
@@ -141,6 +155,7 @@ align-items: center;gap: 15px; /* Пространство между текст
                 <div class="anon-warning" id="anon_warning">
                     Сведения об участнике помогают понять, для каких групп людей полученные результаты характерны в большей степени. 
                     Отказ от их указания при анонимном прохождении может уменьшить точность и обобщаемость выводов исследования.
+                    <b>Вы можете пропустить любые поля, но каждый ваш ответ делает исследование точнее!</b>
                 </div>
             </div>
         </div>
@@ -379,6 +394,30 @@ align-items: center;gap: 15px; /* Пространство между текст
     </div>
 </div>
 <script>
+    function showSoftAskModal() {
+    document.getElementById('soft-ask-modal').style.display = 'flex';
+}
+
+function closeSoftAskAndFill() {
+    // Пользователь согласился дозаполнить. Закрываем окно и подсвечиваем поля.
+    document.getElementById('soft-ask-modal').style.display = 'none';
+    document.getElementById('age').style.borderColor = "var(--warning)";
+    document.getElementById('gender').style.borderColor = "var(--warning)";
+    document.getElementById('gender').focus();
+}
+
+function proceedAsCompleteAnon() {
+    // Пользователь отказался наотрез. Закрываем окно и пускаем дальше.
+    document.getElementById('soft-ask-modal').style.display = 'none';
+    
+    // Снимаем возможную подсветку
+    document.getElementById('age').style.borderColor = "#ddd";
+    document.getElementById('gender').style.borderColor = "#ddd";
+    
+    saveStateToLocal();
+    switchStep('step-form', 'step-bratus');
+    renderBratus();
+}
 // --- КОНФИГУРАЦИЯ ---
 const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbyBH_ksIaHmQxklthf1SgxzmhxAPkqABdkTFTin1TObQJZ98DudLE_20IbqEHR-SKaqCg/exec";
 const STORAGE_KEY = "survey_state_v10";
@@ -630,6 +669,7 @@ function toggleKmnsName() {
 }
 
 function validateForm() {
+    // 1. Формируем список актуальных полей в зависимости от статуса обучения
     let ids = ['fio','gender','age','is_kmns','family_status','children','is_working','has_secondary_edu','edu_status'];
     const status = document.getElementById('edu_status').value;
     if(status === 'Учусь') ids = ids.concat(['university','speciality','edu_level','edu_basis','course']);
@@ -639,20 +679,60 @@ function validateForm() {
     anonMode = document.getElementById('anon_mode').checked;
     
     if (!anonMode) {
+        // --- ОБЫЧНЫЙ РЕЖИМ --- (Строгая проверка всех полей)
         ids.forEach(id => {
             let el = document.getElementById(id);
-            if(!el || !el.value) { if(el) el.style.borderColor = "var(--error)"; valid = false; } 
-            else { if(el) el.style.borderColor = "#ddd"; state.meta[id] = el.value; }
+            if(!el || !el.value) { 
+                if(el) el.style.borderColor = "var(--error)"; 
+                valid = false; 
+            } else { 
+                if(el) el.style.borderColor = "#ddd"; 
+                state.meta[id] = el.value; 
+            }
         });
+        
+        // Сохраняем kmns_name (оно необязательное в обычном режиме)
+        let kmnsEl = document.getElementById('kmns_name');
+        state.meta['kmns_name'] = (kmnsEl && kmnsEl.value.trim() !== "") ? kmnsEl.value : "";
+        
+        if(!valid) { 
+            document.getElementById('form-error').style.display = 'block'; 
+            return; // Прерываемся, просим дозаполнить
+        }
     } else {
-        ids.forEach(id => { state.meta[id] = "Аноним"; });
-        state.meta['is_kmns'] = "Аноним"; // Дополнительно для нового поля
-        state.meta['kmns_name'] = "Аноним"; 
+        // --- АНОНИМНЫЙ РЕЖИМ --- (Сохраняем всё, что ввели, остальное - "Аноним")
+        ids.forEach(id => {
+            let el = document.getElementById(id);
+            // Если поле существует, имеет значение и это не пустая строка
+            if (el && el.value && el.value.trim() !== "") {
+                state.meta[id] = el.value; // Сохраняем реальные данные
+            } else {
+                state.meta[id] = "Аноним"; // Заполняем пустоты
+            }
+            if(el) el.style.borderColor = "#ddd"; // Убираем красные рамки, если были
+        });
+        
+        // Защита от дурака: принудительно стираем ФИО в анонимном режиме
+        state.meta['fio'] = "Аноним"; 
+        
+        // Сохраняем kmns_name
+        let kmnsEl = document.getElementById('kmns_name');
+        state.meta['kmns_name'] = (kmnsEl && kmnsEl.value && kmnsEl.value.trim() !== "") ? kmnsEl.value : "Аноним";
+
+        // --- ЛОГИКА "SOFT ASK" (Мягкая просьба) ---
+        // Проверяем, заполнил ли аноним наши самые главные поля (пол и возраст)
+        let ageVal = state.meta['age'];
+        let genderVal = state.meta['gender'];
+        
+        if (ageVal === "Аноним" || genderVal === "Аноним") {
+            // Если нет — показываем окно с просьбой (которое мы обсуждали в шагах 2 и 3)
+            showSoftAskModal();
+            return; // Прерываем переход, пока не нажмут кнопку в модалке
+        }
     }
-    // Сохраняем необязательное поле, если оно заполнено
-    state.meta['kmns_name'] = document.getElementById('kmns_name').value;
-    if(!valid) { document.getElementById('form-error').style.display = 'block'; return; }
     
+    // Если всё ок (или Soft Ask уже пройден), идем дальше
+    document.getElementById('form-error').style.display = 'none';
     saveStateToLocal();
     switchStep('step-form', 'step-bratus');
     renderBratus();
@@ -779,7 +859,8 @@ function finishSurvey(skipFetch = false) {
     switchStep('step-ipl', 'step-loading');
     
     const isDev = state.meta.mode === 'dev';
-if (!isDev) {
+
+    if (!isDev) {
         // Создаем глобальную функцию для отправки, чтобы вызывать её по кнопке повторно
         window.retryCloudSync = function() {
             document.getElementById('final-msg').innerHTML = "⏳ Отправка данных в облако...";
