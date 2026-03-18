@@ -588,14 +588,33 @@ function restoreForm() {
 }
 
 function updateProgress() {
-    let current = 0;
-    if (document.getElementById('step-bratus').classList.contains('active')) current = state.rank;
-    else if (document.getElementById('step-milman').classList.contains('active')) current = 9;
-    else if (document.getElementById('step-ipl').classList.contains('active')) current = 10;
-    else if (document.getElementById('step-results').classList.contains('active')) current = 11;
+    // Если мы на стартовом экране, прогресс 0%
+    if (document.getElementById('step-form').classList.contains('active')) {
+        document.getElementById('progress').style.width = "0%";
+        return;
+    }
+    // Если мы на экране загрузки или результатов, прогресс 100%
+    if (document.getElementById('step-results').classList.contains('active') || 
+        document.getElementById('step-loading').classList.contains('active')) {
+        document.getElementById('progress').style.width = "100%";
+        return;
+    }
+
+    // Считаем реальное количество отвеченных элементов в state
+    let bratusCount = Object.keys(state.bratus).length; // Максимум 8
+    let milmanCount = Object.keys(state.milman).length; // Максимум 112 (14 вопросов * 8 вариантов)
+    let iplCount = Object.keys(state.ipl).length;       // Максимум 36
+
+    // Всего целевых кликов во всем тесте
+    let totalSteps = 8 + 112 + 36; // 156
+    let currentSteps = bratusCount + milmanCount + iplCount;
+
+    let pct = (currentSteps / totalSteps) * 100;
     
-    let pct = Math.min(100, (current / 11) * 100);
-    document.querySelector('.progress-fill').style.width = pct + "%";
+    // Чтобы полоска не была пустой в самом начале Братуся
+    if (pct < 2) pct = 2;
+
+    document.getElementById('progress').style.width = pct + "%";
 }
 
 // --- GOD MODE (DEV) ---
@@ -773,7 +792,6 @@ function prevBratusRank() { if(state.rank > 1) { state.rank--; renderBratus(); }
 
 function renderMilman() {
     const c = document.getElementById('milman-container');
-    document.getElementById('progress').style.width = "60%"; 
     if(c.innerHTML) {
         for(let k in state.milman) { 
             let el = document.querySelector(`input[name="m_${k}"][value="${state.milman[k]}"]`); 
