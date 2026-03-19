@@ -33,7 +33,20 @@
         input[type="text"], input[type="number"], select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; background: #fff; appearance: none; }
         input:disabled, select:disabled { background-color: #f9f9f9; color: #aaa; border-color: #eee; }
         
-        .btn-container { display: flex; gap: 15px; margin-top: 25px; }
+        .btn-container { 
+            display: flex; gap: 15px; margin-top: 25px; 
+            transition: all 0.3s ease;
+        }
+        /* Класс, который будет добавляться умным кнопкам */
+        .btn-container.smart-sticky {
+            position: sticky;
+            bottom: 0;
+            padding: 15px 0;
+            background: rgba(255, 255, 255, 0.95); /* Белый фон с легкой прозрачностью */
+            backdrop-filter: blur(5px); /* Размытие текста под кнопками (работает на iPhone и современных Android) */
+            border-top: 1px solid #eee;
+            z-index: 100;
+        }
         .btn { flex: 1; padding: 16px; border: none; border-radius: 10px; font-size: 17px; font-weight: 600; cursor: pointer; transition: transform 0.1s; color: white; }
         .btn:active { transform: scale(0.98); opacity: 0.9; }
         .btn-next { background-color: var(--primary); }
@@ -62,6 +75,20 @@
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
+        /* Анимация успешного завершения (галочка) */
+        .success-checkmark { width: 60px; height: 60px; margin: 20px auto; }
+        .checkmark-circle {
+            stroke-dasharray: 166; stroke-dashoffset: 166;
+            stroke-width: 3; stroke-miterlimit: 10; stroke: var(--success); fill: none;
+            animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+        }
+        .checkmark-check {
+            transform-origin: 50% 50%; stroke-dasharray: 48; stroke-dashoffset: 48;
+            stroke-width: 4; stroke: var(--success); fill: none;
+            animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.4s forwards;
+        }
+        @keyframes stroke { 100% { stroke-dashoffset: 0; } }
+
         .dl-section { background: #f0f7fb; border: 2px dashed #3498db; padding: 20px; text-align: center; border-radius: 10px; margin-bottom: 30px; }
         #result-area { width: 100%; height: 80px; margin-top: 10px; font-size: 12px; padding: 10px; border: 1px solid #ddd; display: none; }
         /*arrows for the "learn more" button */
@@ -78,6 +105,9 @@
         #dev-json-input { width: 100%; height: 100px; margin-top: 10px; font-family: monospace; font-size: 12px; color: #333; }
         .dev-btn { background: #555; border: 1px solid #777; color: white; padding: 8px 15px; cursor: pointer; border-radius: 4px; font-size: 0.9em; margin-right: 10px; }
         .dev-btn:hover { background: #666; }
+        /* Подсветка отвеченных строк */
+        tr.answered td { background-color: #f8f9fa; transition: background-color 0.3s ease; }
+        @media (max-width: 600px) { tr.answered { background-color: #f8f9fa; border-radius: 6px; } }
 
         @media (max-width: 600px) {
             .container { padding: 15px; }
@@ -106,8 +136,24 @@ align-items: center;gap: 15px; /* Пространство между текст
 .btn-discreet:hover {background-color: #6c7a7b; /* Чуть темнее при наведении */}
 .import-or-divider {font-weight: bold;color: #999;margin: 15px 0;}
 #user-import-error {color: var(--error);font-weight: bold;margin-top: 10px;min-height: 20px;}
-        .progress-bar { height: 6px; background: #e9ecef; border-radius: 3px; margin-bottom: 20px; }
-        .progress-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.3s; }
+/* Тонкий прилипающий прогресс-бар */
+.progress-bar { 
+            position: fixed; /* Прибиваем к экрану */
+            top: 0; 
+            left: 0;
+            width: 100%;
+            height: 5px; /* Очень тонкая линия */
+            background-color: transparent; /* Убрал серый фон, чтобы линия не съедала пространство */
+            z-index: 9999; 
+            margin: 0;
+            border-radius: 0;
+        }
+        .progress-fill { 
+            height: 100%; 
+            background: var(--primary); /* Зеленый цвет заполнения (можно вернуть var(--primary)) */ 
+            width: 0%; 
+            transition: width 0.4s ease; 
+        }
     </style>
     <link rel="icon" href="icons/favicon.ico" sizes="any">
     <link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
@@ -257,9 +303,17 @@ align-items: center;gap: 15px; /* Пространство между текст
     </div>
 
     <div class="step" id="step-loading" style="text-align:center; padding: 40px 0;">
-        <h2 style="color:var(--primary)">Обработка результатов...</h2>
-        <div class="spinner"></div>
-        <p>Пожалуйста, не закрывайте страницу</p>
+        <h2 id="loading-title" style="color:var(--primary)">Обработка результатов...</h2>
+        <div class="spinner" id="loading-spinner"></div>
+        
+        <div class="success-checkmark" id="success-checkmark" style="display:none;">
+            <svg viewBox="0 0 52 52">
+                <circle class="checkmark-circle" cx="26" cy="26" r="25" />
+                <path class="checkmark-check" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
+            </svg>
+        </div>
+        
+        <p id="loading-text">Пожалуйста, не закрывайте страницу</p>
     </div>
 
     <!-- РЕЗУЛЬТАТЫ -->
@@ -588,33 +642,69 @@ function restoreForm() {
 }
 
 function updateProgress() {
-    // Если мы на стартовом экране, прогресс 0%
-    if (document.getElementById('step-form').classList.contains('active')) {
-        document.getElementById('progress').style.width = "0%";
-        return;
-    }
-    // Если мы на экране загрузки или результатов, прогресс 100%
-    if (document.getElementById('step-results').classList.contains('active') || 
-        document.getElementById('step-loading').classList.contains('active')) {
-        document.getElementById('progress').style.width = "100%";
-        return;
-    }
-
-    // Считаем реальное количество отвеченных элементов в state
+    let progressFill = document.getElementById('progress');
+    let progressBarContainer = document.querySelector('.progress-bar');
+    
+    // 1. Считаем реальные ответы пользователя
     let bratusCount = Object.keys(state.bratus).length; // Максимум 8
-    let milmanCount = Object.keys(state.milman).length; // Максимум 112 (14 вопросов * 8 вариантов)
+    let milmanCount = Object.keys(state.milman).length; // Максимум 112
     let iplCount = Object.keys(state.ipl).length;       // Максимум 36
 
-    // Всего целевых кликов во всем тесте
-    let totalSteps = 8 + 112 + 36; // 156
+    let totalSteps = 8 + 112 + 36; // Всего 156
     let currentSteps = bratusCount + milmanCount + iplCount;
 
     let pct = (currentSteps / totalSteps) * 100;
-    
-    // Чтобы полоска не была пустой в самом начале Братуся
-    if (pct < 2) pct = 2;
 
-    document.getElementById('progress').style.width = pct + "%";
+    // На стартовом экране сбрасываем в 0
+    if (document.getElementById('step-form').classList.contains('active') || currentSteps === 0) {
+        pct = 0;
+    } else if (pct < 2) {
+        pct = 2; // Чтобы было видно начало на первом вопросе
+    }
+
+    // 2. Устанавливаем ширину
+    progressFill.style.width = pct + "%";
+
+    // 3. Красим в зеленый, если ответил на ВСЕ вопросы
+    if (pct >= 100) {
+        progressFill.style.backgroundColor = "var(--success)"; // Зеленый
+    } else {
+        progressFill.style.backgroundColor = "var(--primary)"; // Синий
+    }
+
+    // 4. Прячем бар на экране результатов
+    // Используем setTimeout, чтобы дождаться окончания анимации switchStep (200мс)
+    setTimeout(() => {
+        if (document.getElementById('step-results').classList.contains('active')) {
+            progressBarContainer.style.display = 'none';
+        } else {
+            progressBarContainer.style.display = 'block';
+        }
+    }, 250);
+    checkSmartButtons();
+}
+function checkSmartButtons() {
+    // 1. Братусь (Ждем ровно 3 галочки)
+    let bratusBtn = document.querySelector('#step-bratus .btn-container');
+    if (bratusBtn) {
+        let checkedCount = document.querySelectorAll('#bratus-options input:checked').length;
+        if (checkedCount === 3) bratusBtn.classList.add('smart-sticky');
+        else bratusBtn.classList.remove('smart-sticky');
+    }
+
+    // 2. Мильман (Ждем 112 ответов: 14 вопросов * 8 вариантов)
+    let milmanBtn = document.querySelector('#step-milman .btn-container');
+    if (milmanBtn) {
+        if (Object.keys(state.milman).length === 112) milmanBtn.classList.add('smart-sticky');
+        else milmanBtn.classList.remove('smart-sticky');
+    }
+
+    // 3. ИПЛ (Ждем 36 ответов)
+    let iplBtn = document.querySelector('#step-ipl .btn-container');
+    if (iplBtn) {
+        if (Object.keys(state.ipl).length === 36) iplBtn.classList.add('smart-sticky');
+        else iplBtn.classList.remove('smart-sticky');
+    }
 }
 
 // --- GOD MODE (DEV) ---
@@ -796,6 +886,8 @@ function renderMilman() {
         for(let k in state.milman) { 
             let el = document.querySelector(`input[name="m_${k}"][value="${state.milman[k]}"]`); 
             if(el) el.checked = true; 
+            let row = document.getElementById('row_m_' + k);
+            if(row) row.classList.add('answered');
         }
         return; 
     }
@@ -815,10 +907,18 @@ function renderMilman() {
     for(let k in state.milman) { 
         let el = document.querySelector(`input[name="m_${k}"][value="${state.milman[k]}"]`); 
         if(el) el.checked = true; 
+        let row = document.getElementById('row_m_' + k);
+        if(row) row.classList.add('answered');
     }
     updateProgress();
 }
-function saveM(k, v) { state.milman[k.replace('m_','')] = v; document.getElementById('row_'+k).classList.remove('highlight-error'); saveStateToLocal(); }
+function saveM(k, v) { 
+    state.milman[k.replace('m_','')] = v; 
+    let row = document.getElementById('row_'+k);
+    row.classList.remove('highlight-error'); 
+    row.classList.add('answered');
+    saveStateToLocal(); 
+}
 function finishMilman() {
     if(!validateGroup('m', 14, 8)) return;
     
@@ -841,6 +941,8 @@ function renderIPL() {
         for(let k in state.ipl) { 
             let el = document.querySelector(`input[name="ipl_${k}"][value="${state.ipl[k]}"]`); 
             if(el) el.checked = true; 
+            let row = document.getElementById('row_ipl_' + k);
+            if(row) row.classList.add('answered');
         }
         return;
     }
@@ -853,10 +955,18 @@ function renderIPL() {
     for(let k in state.ipl) { 
         let el = document.querySelector(`input[name="ipl_${k}"][value="${state.ipl[k]}"]`); 
         if(el) el.checked = true; 
+        let row = document.getElementById('row_ipl_' + k);
+        if(row) row.classList.add('answered');
     }
     updateProgress();
 }
-function saveI(i, v) { state.ipl[i] = v; document.getElementById('row_ipl_'+i).classList.remove('highlight-error'); saveStateToLocal(); }
+function saveI(i, v) { 
+    state.ipl[i] = v; 
+    let row = document.getElementById('row_ipl_'+i);
+    row.classList.remove('highlight-error'); 
+    row.classList.add('answered');
+    saveStateToLocal(); 
+}
 function prevIPL() { switchStep('step-ipl', 'step-milman'); saveStateToLocal(); }
 
 // --- ФИНАЛ ---
@@ -907,6 +1017,15 @@ function finishSurvey(skipFetch = false) {
 }
 
 function calculateAndShowResults(immediate = false) {
+    // Запуск анимации галочки ---
+    if (!immediate) {
+        setTimeout(() => {
+            document.getElementById('loading-spinner').style.display = 'none';
+            document.getElementById('loading-text').style.display = 'none';
+            document.getElementById('loading-title').innerHTML = '<span style="color:var(--success)">Готово!</span>';
+            document.getElementById('success-checkmark').style.display = 'block';
+        }, 800); // Через 800мс после начала расчета прячем спиннер и рисуем галочку
+    }
     // 1. БРАТУСЬ
     const cats_map = { 'Альтруистические': [1,9,17], 'Экзистенциальные': [2,10,18], 'Гедонистические': [3,11,19], 'Самореализации': [4,12,20], 'Статусные': [5,13,21], 'Коммуникативные': [6,14,22], 'Семейные': [7,15,23], 'Когнитивные': [8,16,24] };
     let b_labels=[], b_data=[], b_desc="";
@@ -1421,9 +1540,19 @@ function renderIPLTypesPairs(ipl_types) {
         });
     }
     bratusExportRows.sort((a, b) => a.sum - b.sum);
-    // ======================================================================
+// ======================================================================
+    // Увеличиваем задержку до 2000мс (800мс спиннер + 1200мс на красивую галочку)
     setTimeout(() => {
-        if(!immediate) switchStep('step-loading', 'step-results');
+        if(!immediate) {
+            switchStep('step-loading', 'step-results');
+            // Сбрасываем экран загрузки обратно (на случай "Начать заново")
+            setTimeout(() => {
+                document.getElementById('loading-spinner').style.display = 'block';
+                document.getElementById('loading-text').style.display = 'block';
+                document.getElementById('loading-title').innerHTML = '<span style="color:var(--primary)">Обработка результатов...</span>';
+                document.getElementById('success-checkmark').style.display = 'none';
+            }, 500);
+        }
         
         document.getElementById('result-area').value = JSON.stringify(state, null, 2);
 
@@ -1771,7 +1900,7 @@ document.getElementById("detailsIPL").innerHTML = detailsHTML;
         };
         console.log("CACHE SAVED FIXED!", window.FULL_REPORT_CACHE);
         // ======================================================================
-    }, immediate ? 0 : 1000);
+    }, immediate ? 0 : 2000);
    // --- ДОПОЛНЕНИЕ: Расчет профиля для сфер Жизнь и Работа ---
    const spheresToProcess = [
         { scores: m_scores.life.ideal, elementId: 'textMilmanLife', label: 'Жизнь' },
