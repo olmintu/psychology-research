@@ -9,64 +9,105 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
     <style>
-        :root { --primary: #3498db; --success: #27ae60; --warning: #f39c12; --error: #e74c3c; --bg: #f4f6f8; --info-bg: #ebf5fb; --gray: #95a5a6; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg); color: #333; margin: 0; padding: 15px; line-height: 1.5; }
+        /* Базовые переменные (Светлая тема) */
+        /* Базовые переменные (Светлая тема) */
+        :root { 
+            --primary: #3498db; --success: #27ae60; --warning: #f39c12; --error: #e74c3c; 
+            --bg: #f4f6f8; --info-bg: #ebf5fb; --gray: #95a5a6;
+            --surface: #ffffff; 
+            --text-main: #333333; 
+            --text-title: #2c3e50; 
+            --border: #eeeeee; 
+            /* НОВЫЕ ПЕРЕМЕННЫЕ */
+            --text-muted: #555555; /* Цвет лейблов ("Работаете ли вы?") */
+            --input-bg: #ffffff;   /* Фон полей ввода */
+            --input-border: #dddddd;
+            --anon-bg: #fff3cd;    /* Фон желтого предупреждения */
+            --anon-border: #ffeeba;
+            --anon-text: #856404;
+            --sticky-bg: rgba(255, 255, 255, 0.95);
+            --btn-sec-bg: #95a5a6;     /* Привычный серый */
+            --btn-sec-hover: #7f8c8d;  /* Чуть темнее при наведении */
+            --btn-sec-text: #ffffff;   /* Белый текст */
+        }
+        /* Темная тема */
+        :root[data-theme="dark"] {
+            --bg: #121212; 
+            --surface: #1e1e1e; 
+            --text-main: #e0e0e0; 
+            --text-title: #ffffff; 
+            --border: #333333;
+            --info-bg: #1a2a3a; 
+            /* НОВЫЕ ПЕРЕМЕННЫЕ ДЛЯ ТЕМНОЙ ТЕМЫ */
+            --text-muted: #aaaaaa; /* Светло-серый, чтобы читалось на черном */
+            --input-bg: #2a2a2a;   /* Темно-серые поля ввода */
+            --input-border: #444444;
+            --anon-bg: #332701;    /* Темно-желтый фон */
+            --anon-border: #4a3c15;
+            --anon-text: #e6c875;
+            --sticky-bg: rgba(30, 30, 30, 0.95);
+            --btn-sec-bg: #2c2c2c;     /* Глубокий темно-серый, почти в цвет карточек */
+            --btn-sec-hover: #3d3d3d;  /* Немного светлеет при наведении */
+            --btn-sec-text: #e0e0e0;   /* Светло-серый текст (не чисто белый, чтобы не резало глаза) */
+        }
+        /* Применяем переменные к базе */
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg); color: var(--text-main); margin: 0; padding: 15px; line-height: 1.5; transition: background-color 0.3s, color 0.3s; }
         
-        .container { max-width: 900px; margin: 0 auto; background: #fff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .container { max-width: 900px; margin: 0 auto; background: var(--surface); padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); transition: background-color 0.3s; }
         
-        h1 { font-size: 1.6rem; text-align: center; color: #2c3e50; margin-bottom: 10px; }
-        h2 { font-size: 1.3rem; color: #34495e; margin-top: 0; text-align: center; margin-bottom: 15px; }
-        h3 { color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 5px; margin-top: 30px; }
+        h1 { font-size: 1.6rem; text-align: center; color: var(--text-title); margin-bottom: 10px; }
+        h2 { font-size: 1.3rem; color: var(--text-title); margin-top: 0; text-align: center; margin-bottom: 15px; }
+        h3 { color: var(--text-title); border-bottom: 2px solid var(--border); padding-bottom: 5px; margin-top: 30px; }
         
-        .instruction { background-color: var(--info-bg); border-left: 5px solid var(--primary); padding: 15px; border-radius: 4px; margin-bottom: 25px; font-size: 0.95rem; color: #2c3e50; line-height: 1.6; }
+        .instruction { background-color: var(--info-bg); border-left: 5px solid var(--primary); padding: 15px; border-radius: 4px; margin-bottom: 25px; font-size: 0.95rem; color: var(--text-title); line-height: 1.6; transition: all 0.3s; }
         .instruction ul { margin: 5px 0 10px 20px; padding: 0; }
         
-        .anon-switch { background: #fff3cd; border: 1px solid #ffeeba; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: flex-start; gap: 10px; }
+        .anon-switch { background: var(--anon-bg); border: 1px solid var(--anon-border); padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: flex-start; gap: 10px; transition: all 0.3s; }
         .anon-switch input { width: 20px; height: 20px; margin-top: 3px; }
-        .anon-warning { font-size: 0.85em; color: #856404; margin-top: 5px; display: none; }
+        .anon-warning { font-size: 0.85em; color: var(--anon-text); margin-top: 5px; display: none; transition: color 0.3s; }
         
         .step { display: none; opacity: 0; transition: opacity 0.3s ease; }
         .step.active { display: block; opacity: 1; }
         
         .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.9rem; color: #555; }
-        input[type="text"], input[type="number"], select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; background: #fff; appearance: none; }
-        input:disabled, select:disabled { background-color: #f9f9f9; color: #aaa; border-color: #eee; }
-        
+        label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.9rem; color: var(--text-muted); transition: color 0.3s; }
+        input[type="text"], input[type="number"], select, textarea { width: 100%; padding: 12px; border: 1px solid var(--input-border); border-radius: 8px; font-size: 16px; box-sizing: border-box; background: var(--input-bg); color: var(--text-main); appearance: none; transition: all 0.3s; }
+        input:disabled, select:disabled { background-color: var(--bg); color: var(--text-muted); border-color: var(--border); opacity: 0.7; }
         .btn-container { 
             display: flex; gap: 15px; margin-top: 25px; 
             transition: all 0.3s ease;
         }
         /* Класс, который будет добавляться умным кнопкам */
         .btn-container.smart-sticky {
-            position: sticky;
-            bottom: 0;
-            padding: 15px 0;
-            background: rgba(255, 255, 255, 0.95); /* Белый фон с легкой прозрачностью */
-            backdrop-filter: blur(5px); /* Размытие текста под кнопками (работает на iPhone и современных Android) */
-            border-top: 1px solid #eee;
-            z-index: 100;
-        }
+        position: sticky;
+        bottom: 0;
+        padding: 15px 0;
+        background: var(--sticky-bg); /* Использовали переменную */
+        backdrop-filter: blur(5px);
+        border-top: 1px solid var(--border);
+        z-index: 100;
+        transition: background 0.3s, border-top 0.3s;
+}
         .btn { flex: 1; padding: 16px; border: none; border-radius: 10px; font-size: 17px; font-weight: 600; cursor: pointer; transition: transform 0.1s; color: white; }
         .btn:active { transform: scale(0.98); opacity: 0.9; }
         .btn-next { background-color: var(--primary); }
         .btn-back { background-color: var(--gray); }
         .btn-success { background-color: var(--success); }
-        .btn-secondary { background-color: #95a5a6; margin-top: 10px; width: 100%; padding: 12px; }
+        .btn-secondary { background-color: var(--btn-sec-bg); color: var(--btn-sec-text);  margin-top: 10px;width: 100%; padding: 12px; transition: all 0.3s ease; }
         .btn-red { background-color: #dc3545; margin-top: 10px; width: 100%; padding: 12px; }
-        .option-card { border: 2px solid #eee; padding: 12px; margin-bottom: 8px; border-radius: 10px; display: flex; align-items: center; cursor: pointer; transition: all 0.2s; background: #fff; }
+        .option-card { border: 2px solid var(--border); padding: 12px; margin-bottom: 8px; border-radius: 10px; display: flex; align-items: center; cursor: pointer; transition: all 0.2s; background: var(--input-bg); color: var(--text-main); }
         .option-card input { width: 22px; height: 22px; margin-right: 15px; flex-shrink: 0; }
-        .option-card.checked { border-color: var(--primary); background-color: #f0f9ff; }
+        .option-card.checked { border-color: var(--primary); background-color: var(--info-bg); }
 
         .error-msg { color: #fff; background: var(--error); padding: 12px; border-radius: 8px; margin-top: 20px; text-align: center; display: none; font-weight: bold; }
         .highlight-error { border: 2px solid var(--error) !important; background-color: #fff5f5 !important; }
 
         table { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
         th, td { padding: 12px; text-align: center; border-bottom: 1px solid #eee; vertical-align: middle; }
-        th { background: #f8f9fa; font-size: 0.85rem; color: #333; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        th { background: var(--surface); font-size: 0.85rem; color: var(--text-title); position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 5px rgba(0,0,0,0.05); transition: background-color 0.3s, color 0.3s; }
         td:first-child { text-align: left; font-weight: 500; font-size: 0.95rem; width: 45%; }
         
-        .res-block { background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .res-block { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: background-color 0.3s, border-color 0.3s; }
         .score-badge { display: inline-block; padding: 5px 10px; border-radius: 15px; font-weight: bold; font-size: 0.9em; }
         .bg-green { background: #d4edda; color: #155724; }
         .bg-red { background: #f8d7da; color: #721c24; }
@@ -89,8 +130,8 @@
         }
         @keyframes stroke { 100% { stroke-dashoffset: 0; } }
 
-        .dl-section { background: #f0f7fb; border: 2px dashed #3498db; padding: 20px; text-align: center; border-radius: 10px; margin-bottom: 30px; }
-        #result-area { width: 100%; height: 80px; margin-top: 10px; font-size: 12px; padding: 10px; border: 1px solid #ddd; display: none; }
+        .dl-section { background: var(--info-bg); border: 2px dashed var(--primary); padding: 20px; text-align: center; border-radius: 10px; margin-bottom: 30px; transition: background-color 0.3s; }
+        #result-area { width: 100%; height: 80px; margin-top: 10px; font-size: 12px; padding: 10px; border: 1px solid var(--input-border); background: var(--input-bg); color: var(--text-main); display: none; transition: all 0.3s; }
         /*arrows for the "learn more" button */
         .detail-arrow svg {vertical-align: middle;transition: transform 0.25s ease;transform-origin: center; }
         .detail-arrow {display: inline-block;margin-left: 6px;transition: transform 0.25s ease;}
@@ -99,20 +140,20 @@
         .detail-arrow {transform: rotate(180deg);}
         .detail-arrow svg {transform: rotate(180deg);}
        /* Лёгкий ховер-эффект — затемнение фона (в духе flat-стиля) */
-       .btn-secondary:hover {background-color: #7f8c8d; /* немного темнее #95a5a6 */}
+        .btn-secondary:hover {background-color: var(--btn-sec-hover);}
         /* DEV TOOLS */
         #dev-panel { display: none; background: #333; color: #fff; padding: 15px; border-radius: 8px; margin-top: 15px; }
         #dev-json-input { width: 100%; height: 100px; margin-top: 10px; font-family: monospace; font-size: 12px; color: #333; }
         .dev-btn { background: #555; border: 1px solid #777; color: white; padding: 8px 15px; cursor: pointer; border-radius: 4px; font-size: 0.9em; margin-right: 10px; }
         .dev-btn:hover { background: #666; }
         /* Подсветка отвеченных строк */
-        tr.answered td { background-color: #f8f9fa; transition: background-color 0.3s ease; }
-        @media (max-width: 600px) { tr.answered { background-color: #f8f9fa; border-radius: 6px; } }
+        tr.answered td { background-color: var(--info-bg); transition: background-color 0.3s ease; }
+        @media (max-width: 600px) { tr.answered { background-color: var(--info-bg); border-radius: 6px; } }
 
         @media (max-width: 600px) {
             .container { padding: 15px; }
             th { font-size: 0.7rem; padding: 5px; }
-            td { padding: 10px 2px; }
+            td { padding: 12px; text-align: center; border-bottom: 1px solid var(--border); vertical-align: middle; transition: border-color 0.3s; }
             td:first-child { font-size: 0.9rem; width: 100%; display: block; border-bottom: none; padding-bottom: 5px; color: var(--primary); font-weight: 600; }
             tr { display: block; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 10px; }
             td:not(:first-child) { display: inline-block; width: 22%; border: none; }
@@ -122,19 +163,18 @@
         }
         /* --- СТИЛИ ДЛЯ МОДАЛЬНОГО ОКНА ЗАГРУЗКИ --- */
 #user-import-modal {position: fixed;top: 0; left: 0;width: 100%; height: 100%;background-color: rgba(0,0,0,0.6);display: none; /* Изначально скрыто */align-items: center;justify-content: center;z-index: 1000;}
-.import-modal-content {background: #fff;padding: 25px; border-radius: 12px;width: 90%;max-width: 500px;box-shadow: 0 5px 25px rgba(0,0,0,0.2);position: relative;text-align: center;}
-.import-modal-content h3 {margin-top: 0;margin-bottom: 20px;color: #333;}
+.import-modal-content {background: var(--surface); padding: 25px; border-radius: 12px; width: 90%; max-width: 500px; box-shadow: 0 5px 25px rgba(0,0,0,0.5); position: relative; text-align: center; transition: background-color 0.3s;}
+.import-modal-content h3 {margin-top: 0; margin-bottom: 20px; color: var(--text-title); transition: color 0.3s;}
 .import-close-btn {position: absolute;top: 10px;right: 15px;font-size: 28px;line-height: 1;font-weight: bold;color: #aaa;cursor: pointer;transition: color 0.2s;}
 .import-close-btn:hover {color: #333;}
-#user-drop-zone {border: 3px dashed #ccc;border-radius: 10px;padding: 30px;margin-bottom: 15px;background-color: #f9f9f9;transition: background-color 0.2s, border-color 0.2s;}
-#user-drop-zone.drag-over {background-color: #f0f9ff;border-color: var(--primary);}
+#user-drop-zone {border: 3px dashed var(--border);border-radius: 10px;padding: 30px;margin-bottom: 15px;background-color: var(--input-bg);transition: background-color 0.2s, border-color 0.2s;}
+#user-drop-zone.drag-over {background-color: var(--info-bg);border-color: var(--primary);}
 #user-paste-area {width: 100%;height: 100px;margin-top: 15px;padding: 10px;font-family: monospace;font-size: 13px;border: 1px solid #ddd;border-radius: 8px;resize: vertical;}
-.load-prior-result {margin-bottom: 20px;padding: 15px;background: #f0f7fb; /* Светло-голубой фон */border-radius: 8px;text-align: center;display: flex;justify-content: center;
-align-items: center;gap: 15px; /* Пространство между текстом и кнопкой */}
-.load-prior-result span {font-size: 1.0em;color: #34495e;}
-.btn-discreet {background-color: #7f8c8d; /* Приглушенный серый цвет */padding: 8px 16px;font-size: 15px;flex: none; /* Убираем растягивание */width: auto;}
-.btn-discreet:hover {background-color: #6c7a7b; /* Чуть темнее при наведении */}
-.import-or-divider {font-weight: bold;color: #999;margin: 15px 0;}
+.load-prior-result {margin-bottom: 20px; padding: 15px; background: var(--info-bg); border-radius: 8px; text-align: center; display: flex; justify-content: center; align-items: center; gap: 15px; transition: background-color 0.3s;} /* Пространство между текстом и кнопкой */
+.load-prior-result span {font-size: 1.0em; color: var(--text-title); transition: color 0.3s;}
+.btn-discreet {background-color: var(--btn-sec-bg); color: var(--btn-sec-text); padding: 8px 16px; font-size: 15px;flex: none; width: auto; transition: all 0.3s ease;}
+.btn-discreet:hover {background-color: var(--btn-sec-hover);}
+.import-or-divider {font-weight: bold;color: var(--text-muted);margin: 15px 0;transition: color 0.3s;}
 #user-import-error {color: var(--error);font-weight: bold;margin-top: 10px;min-height: 20px;}
 /* Тонкий прилипающий прогресс-бар */
 .progress-bar { 
@@ -163,13 +203,17 @@ align-items: center;gap: 15px; /* Пространство между текст
     <link rel="manifest" href="site.webmanifest">
 </head>
 <body>
+    <body>
+        <button id="theme-toggle" onclick="toggleTheme()" style="position: fixed; top: 15px; right: 15px; z-index: 9999; background: var(--surface); border: 1px solid var(--border); border-radius: 50%; width: 40px; height: 40px; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); font-size: 1.2em; display: flex; align-items: center; justify-content: center; padding: 0;">
+            🌓
+        </button>
     <div id="soft-ask-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 1001;">
         <div class="import-modal-content" style="text-align: left;">
             <h3 style="color: var(--primary);">Минуточку внимания 🥺</h3>
-            <p style="font-size: 0.95em; color: #555; line-height: 1.5;">
+            <p style="font-size: 0.95em; color: var(--text-main); line-height: 1.5; transition: color 0.3s;">
                 Вы выбрали анонимный режим, и <b>мы уважаем ваше решение!</b>
             </p>
-            <p style="font-size: 0.95em; color: #555; line-height: 1.5;">
+            <p style="font-size: 0.95em; color: var(--text-main); line-height: 1.5; transition: color 0.3s;">
                 Однако, для научной ценности этого исследования нам <b>очень важно</b> знать хотя бы ваш <b>Пол</b> и <b>Возраст</b>. Это позволит нам понять, как различаются резуьтаты у разных групп людей, не нарушая вашу анонимность.
             </p>
             <div style="display: flex; gap: 10px; margin-top: 25px;">
@@ -179,9 +223,7 @@ align-items: center;gap: 15px; /* Пространство между текст
         </div>
     </div>
 <div class="container">
-
     <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
-
     <!-- АНКЕТА -->
     <div class="step active" id="step-form">
         <div class="load-prior-result">
@@ -205,9 +247,7 @@ align-items: center;gap: 15px; /* Пространство между текст
                 </div>
             </div>
         </div>
-
         <div class="form-group"><label>Ваше имя (или псевдоним): <span class="req">*</span></label><input type="text" id="fio" placeholder="Иванов Иван" onkeyup="checkDevMode(this.value)"></div>
-        
         <!-- DEV TOOLS -->
         <div id="dev-panel">
             <div style="font-weight:bold; margin-bottom:10px;">🛠️ Режим разработчика</div>
@@ -221,7 +261,6 @@ align-items: center;gap: 15px; /* Пространство между текст
                 <div id="dev-error" style="color:#e74c3c; font-size:0.9em; margin-top:5px;"></div>
             </div>
         </div>
-
         <div style="display: flex; gap: 10px;">
             <div class="form-group" style="flex: 1;">
                 <label>Пол: <span class="req">*</span></label>
@@ -257,11 +296,9 @@ align-items: center;gap: 15px; /* Пространство между текст
             </div>
             <div class="form-group" id="course_block"><label>Курс: <span class="req">*</span></label><select id="course" onchange="saveStateToLocal()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
         </div>
-
         <div class="error-msg" id="form-error">Заполните обязательные поля или включите Анонимный режим!</div>
         <button class="btn btn-next" onclick="validateForm()">Начать исследование</button>
     </div>
-
     <!-- МЕТОДИКА 1 -->
     <div class="step" id="step-bratus">
         <h2>1/3. Жизненные смыслы</h2>
@@ -274,7 +311,6 @@ align-items: center;gap: 15px; /* Пространство между текст
         <div class="error-msg" id="bratus-error">Выберите ровно 3 пункта!</div>
         <div class="btn-container"><button class="btn btn-back" onclick="prevBratusRank()">Назад</button><button class="btn btn-next" onclick="nextBratusRank()">Далее</button></div>
     </div>
-
     <!-- МЕТОДИКА 2 -->
     <div class="step" id="step-milman">
         <h2>2/3. Мотивация</h2>
@@ -287,7 +323,6 @@ align-items: center;gap: 15px; /* Пространство между текст
         <div class="error-msg" id="milman-error">Ответьте на вопросы, подсвеченные красным!</div>
         <div class="btn-container"><button class="btn btn-back" onclick="prevMilman()">Назад</button><button class="btn btn-next" onclick="finishMilman()">Далее</button></div>
     </div>
-
     <!-- МЕТОДИКА 3 -->
     <div class="step" id="step-ipl">
         <h2>3/3. Инновации</h2>
@@ -301,7 +336,6 @@ align-items: center;gap: 15px; /* Пространство между текст
         <div class="error-msg" id="ipl-error">Ответьте на вопросы, подсвеченные красным!</div>
         <div class="btn-container"><button class="btn btn-back" onclick="prevIPL()">Назад</button><button class="btn btn-success" onclick="finishSurvey()">Получить результат</button></div>
     </div>
-
     <div class="step" id="step-loading" style="text-align:center; padding: 40px 0;">
         <h2 id="loading-title" style="color:var(--primary)">Обработка результатов...</h2>
         <div class="spinner" id="loading-spinner"></div>
@@ -312,10 +346,8 @@ align-items: center;gap: 15px; /* Пространство между текст
                 <path class="checkmark-check" d="M14.1 27.2l7.1 7.2 16.7-16.8" />
             </svg>
         </div>
-        
         <p id="loading-text">Пожалуйста, не закрывайте страницу</p>
     </div>
-
     <!-- РЕЗУЛЬТАТЫ -->
     <div class="step" id="step-results">
         <h1 style="color:var(--success)">Исследование завершено!</h1>
@@ -323,7 +355,7 @@ align-items: center;gap: 15px; /* Пространство между текст
         
         <div class="dl-section">
             <h3 style="margin-top:0">📁 Ваши результаты</h3>
-            <p style="font-size:0.9em; margin-bottom:15px; color:#555;">
+            <p style="font-size:0.9em; margin-bottom:15px; color:var(--text-muted); transition: color 0.3s;">
                 Данные автоматически отправляются исследователю. Для себя вы можете скачать полную интерпретацию с графиками или ознакомиться с интерпретаицией ваших результатов ниже.
             </p>
             
@@ -332,10 +364,9 @@ align-items: center;gap: 15px; /* Пространство между текст
                     📄 Скачать PDF отчет
                 </button>
             </div>
-            
-            <details style="margin-top: 15px; text-align: left; background: #fff; padding: 12px; border-radius: 8px; border: 1px solid #ddd;">
-                <summary style="cursor: pointer; font-weight: 600; color: #2c3e50;">⚙️ Резервное сохранение </summary>
-                <p style="font-size: 0.85em; color: #666; margin-top: 10px;">
+            <details style="margin-top: 15px; text-align: left; background: var(--surface); padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
+                <summary style="cursor: pointer; font-weight: 600; color: var(--text-title); transition: color 0.3s;">⚙️ Резервное сохранение </summary>
+                <p style="font-size: 0.85em; color: var(--text-muted); margin-top: 10px; transition: color 0.3s;">
                     Используйте эти кнопки <b>только</b> если при отправке в облако произошла ошибка, чтобы передать данные вручную.
                 </p>
                 <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top: 10px;">
@@ -346,9 +377,8 @@ align-items: center;gap: 15px; /* Пространство между текст
                 <p id="copy-msg" style="color:var(--success); display:none; font-weight:bold; margin-top:5px; text-align:center;">Скопировано!</p>
             </details>
         </div>
-
         <h2 style="margin-top:40px;">📊 Интерпретация результатов</h2>
-        <div style="background:#fff3cd;border:1px solid #ffeeba;color:#856404;padding:15px;border-radius:8px;margin-bottom:25px;font-size:0.95em;line-height:1.6;">
+        <div style="background:var(--anon-bg); border:1px solid var(--anon-border); color:var(--anon-text); padding:15px; border-radius:8px; margin-bottom:25px; font-size:0.95em; line-height:1.6; transition: all 0.3s;">
     <b>Внимание!</b> Результаты и интерпретации, полученные без участия специалистов, не следует воспринимать слишком серьезно.
     Диагностическую ценность имеют только исследования, проведенные профессиональным психологом.
 </div>
@@ -385,7 +415,6 @@ align-items: center;gap: 15px; /* Пространство между текст
                 <p> <b>• Смыслы самореализации.</b> Основаны на потребности человека исполнить свое предназначение, реализовать все свои способности и возможности, совершенствовать свою личность и отношения с окружающим миром.</p>
             </div>
         </div>
-
         <div class="res-block">
             <h3>2. Мотивационная структура личности</h3>
             <p>Сравнение желаемого (Идеальное) и действительного (Реальное). Обобщённый профиль: интеграция жизненной и профессиональной сфер.</p>
@@ -396,7 +425,7 @@ align-items: center;gap: 15px; /* Пространство между текст
                 Подробнее <span class="detail-arrow"><svg width="12" height="8" viewBox="0 0 12 8" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M1 7 L6 1 L11 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
             </button>
-                <div id="emoWarningBlock" style="display:none; margin-bottom:15px; padding:12px; border:1px solid #e0c97f; background:#fffbe6; border-radius:8px; font-size:0.95em;">
+            <div id="emoWarningBlock" style="display:none; margin-bottom:15px; padding:12px; border:1px solid var(--warning); background:var(--anon-bg); color:var(--anon-text); border-radius:8px; font-size:0.95em; transition: all 0.3s;">
                 </div>
                 <div id="detailsMilman" style="display:none; margin-top:15px; font-size:0.9em; line-height:1.6;">
                 <h3>Жизнь: Идеал и Реальность</h3>
@@ -430,17 +459,15 @@ align-items: center;gap: 15px; /* Пространство между текст
     <div class="import-modal-content">
         <span class="import-close-btn" onclick="hideUserImportModal()">&times;</span>
         <h3>Загрузить результат</h3>
-
         <div id="user-drop-zone">
-            <p style="margin:0; font-size:1.1em; color:#555;">Перетащите файл .json сюда</p>
-            <div class="import-or-divider">или</div>
-            <button class="btn btn-secondary" style="padding: 12px 20px; font-size:16px; margin-top:0;" onclick="document.getElementById('user-file-input').click();">Выберите файл</button>
-            <!-- Скрытый инпут для выбора файла -->
+            <p style="margin:0; font-size:1.1em; color:var(--text-main); transition: color 0.3s;">Перетащите файл .json сюда</p>
+            <div class="import-or-divider" style="color:var(--text-muted); transition: color 0.3s;">или</div>
+            
+            <button class="btn btn-secondary" style="padding: 12px 20px; font-size:16px; margin-top:0; background-color: var(--primary); color: #fff; border-color: var(--primary);" onclick="document.getElementById('user-file-input').click();">Выберите файл</button>
+            
             <input type="file" id="user-file-input" accept=".json,application/json" style="display:none;">
         </div>
-        
         <div class="import-or-divider">или вставьте текст из файла</div>
-        
         <textarea id="user-paste-area" placeholder="Вставьте сюда содержимое .json файла..."></textarea>
         <button class="btn btn-success" style="width:100%; margin-top:10px;" onclick="processPastedJSON()">Применить</button>
         
@@ -448,10 +475,28 @@ align-items: center;gap: 15px; /* Пространство между текст
     </div>
 </div>
 <script>
+    // --- ИНИЦИАЛИЗАЦИЯ ТЕМЫ ---
+    function initTheme() {
+        const savedTheme = localStorage.getItem('app_theme');
+        if (savedTheme) {
+            document.documentElement.setAttribute('data-theme', savedTheme);
+        } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            // Если в ОС стоит темная тема, ставим ее по умолчанию
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+    }
+    initTheme(); // Вызываем сразу, чтобы не было "белой вспышки" при загрузке
+    function toggleTheme() {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('app_theme', newTheme);
+        
+        // Перерисовываем графики Мильмана, если они открыты, чтобы обновить цвет текста (сделаем это позже)
+    }
     function showSoftAskModal() {
     document.getElementById('soft-ask-modal').style.display = 'flex';
 }
-
 function closeSoftAskAndFill() {
     // Пользователь согласился дозаполнить. Закрываем окно и подсвечиваем поля.
     document.getElementById('soft-ask-modal').style.display = 'none';
@@ -459,7 +504,6 @@ function closeSoftAskAndFill() {
     document.getElementById('gender').style.borderColor = "var(--warning)";
     document.getElementById('gender').focus();
 }
-
 function proceedAsCompleteAnon() {
     // Пользователь отказался наотрез. Закрываем окно и пускаем дальше.
     document.getElementById('soft-ask-modal').style.display = 'none';
@@ -475,10 +519,8 @@ function proceedAsCompleteAnon() {
 // --- КОНФИГУРАЦИЯ ---
 const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbyBH_ksIaHmQxklthf1SgxzmhxAPkqABdkTFTin1TObQJZ98DudLE_20IbqEHR-SKaqCg/exec";
 const STORAGE_KEY = "survey_state_v10";
-
 // ДАННЫЕ
 const bratus_stmts=[{id:1,t:"...чтобы помогать другим людям"},{id:2,t:"...чтобы быть свободным"},{id:3,t:"...чтобы получать удовольствие"},{id:4,t:"...чтобы совершенствоваться"},{id:5,t:"...чтобы добиваться успеха"},{id:6,t:"...чтобы быть с близким человеком"},{id:7,t:"...чтобы передать все лучшее своим детям"},{id:8,t:"...чтобы понять себя самого"},{id:9,t:"...чтобы делать добро"},{id:10,t:"...чтобы жить"},{id:11,t:"...чтобы испытывать счастье"},{id:12,t:"...чтобы осуществить себя"},{id:13,t:"...чтобы сделать хорошую карьеру"},{id:14,t:"...чтобы чувствовать, что кому-то нужен"},{id:15,t:"...чтобы жить ради своей семьи"},{id:16,t:"...чтобы познавать Бога"},{id:17,t:"...чтобы улучшать мир"},{id:18,t:"...чтобы любить"},{id:19,t:"...чтобы получать как можно больше ощущений и переживаний"},{id:20,t:"...чтобы реализовать все свои возможности"},{id:21,t:"...чтобы занимать достойное положение в обществе"},{id:22,t:"...чтобы радоваться общению с другими"},{id:23,t:"...чтобы помогать своим родным и близким"},{id:24,t:"...чтобы понять жизнь"}];
-
 const milman_qs=[
     {q:"В своем поведении в жизни нужно придерживаться следующих принципов:", i:[ "«Время - деньги». Нужно стремиться их больше зарабатывать.", "«Главное - здоровье». Нужно беречь себя и свои нервы.", "Свободное время нужно проводить с друзьями.", "Свободное время надо отдавать семье.", "Нужно делать добро, даже если это дорого обходится.", "Нужно делать все возможное, чтобы завоевать место под солнцем.", "Нужно приобретать больше знаний, чтобы понять причины и сущность того, что происходит вокруг.", "Нужно стремиться открыть что-то новое, создать, изобрести." ]},
     {q:"В своем поведении на работе нужно следовать таким принципам:", i:[ "Работа - это вынужденная жизненная необходимость.", "Главное - не допускать конфликтов.", "Нужно стремиться обеспечить себя спокойными, удобными условиями.", "Нужно активно стремится к служебному продвижению.", "Главное - завоевать авторитет и признание.", "Нужно постоянно совершенствоваться в своем деле.", "В своей работе всегда надо найти интересное, что может увлечь.", "Нужно не только увлечься самому, но и увлечь работой других." ]},
@@ -493,17 +535,12 @@ const milman_qs=[
     {q:"К настоящему времени я имею в достаточной степени:", i:[ "Материальное благополучие.", "Возможность интересно развлекаться.", "Хорошие условия жизни.", "Хорошую семью.", "Достаточно возможностей интересно проводить время в обществе.", "Уважение, признание и благодарность других.", "Чувство полезности для других.", "Создание чего-то ценного, полезного." ]},
     {q:"Я думаю, что имею в своей работе в достаточной степени:", i:[ "Хорошую зарплату, другие материальные блага.", "Хорошие условия для работы.", "Хороший коллектив, дружеские взаимоотношения.", "Определенные творческие достижения.", "Хорошую должность.", "Самостоятельность и независимость.", "Авторитет и уважение коллег.", "Достаточно высокий профессиональный уровень." ]},
     {q:"Больше всего мне нравится, когда:", i:[ "Не нужно думать о насущных заботах.", "Есть комфортное, приятное окружение.", "Кругом оживление, веселая суета.", "Предстоит провести время в веселом обществе.", "Испытываю чувство соревнования, поиска.", "Испытываю чувство активного напряжения и ответственности.", "Погружен в свою работу.", "Включен в совместную работу с другими." ]},
-    {q:"Когда меня постигает неудача, не получается то, что я хочу:", i:[ "Я расстраиваюсь и долго переживаю.", "Стараюсь переключиться на что-нибудь другое, приятное.", "Теряюсь, не знаю что делать, злюсь на себя.", "Злюсь на то, что мне помешало.", "Стараюсь оставаться спокойным, и обычно мне это удается.", "Пережидаю, когда пройдет первая реакция, и спокойно анализирую, что произошло.", "Стараюсь понять, в чем я сам был виноват.", "Стараюсь понять причины неудачи и поправить положение." ]}
-];
-
+    {q:"Когда меня постигает неудача, не получается то, что я хочу:", i:[ "Я расстраиваюсь и долго переживаю.", "Стараюсь переключиться на что-нибудь другое, приятное.", "Теряюсь, не знаю что делать, злюсь на себя.", "Злюсь на то, что мне помешало.", "Стараюсь оставаться спокойным, и обычно мне это удается.", "Пережидаю, когда пройдет первая реакция, и спокойно анализирую, что произошло.", "Стараюсь понять, в чем я сам был виноват.", "Стараюсь понять причины неудачи и поправить положение." ]}];
 const ipl_qs=[
-    "Все знания о мире можно легко получить из книг, компьютерной сети.", "Когда я думаю о будущем, не чувствую страха за свою семью, страну, где я живу.", "Я смог бы побороть страх за свою безопасность и заняться экстремальным видом спорта, прыгнуть с парашютом, нырнуть с аквалангом.", "Я без усилий переключаюсь на рабочий режим после продолжительных праздников или отпуска.", "Продвижение по социальной и профессиональной лестнице – главная причина, по которой я стараюсь овладеть новой информацией, даже если она для меня не интересна.", "Происходящие со мной перемены не вызывают у меня чувства тревоги или беспокойства.", "Рядовой человек не несет ответственности за возникновение озоновых дыр, глобальное загрязнение природной среды и прочие подобные катаклизмы.", "Когда я иду по хорошо знакомой дороге, то сразу подмечаю произошедшие вокруг перемены.", "Любые изменения в социально-политической ситуации приводят к очередному кризису.", "Я - представитель консервативной профессии, поэтому чьи-либо попытки внести изменения в организацию моей работы, только вредят делу.", "Я легко нахожу язык с новым человеком, веду себя как обычно в кругу незнакомых людей.", "Я не придаю особого значения постоянному месту отдыха, питанию.", "Я регулярно и с интересом читаю книги «альтернативных авторов», слушаю новые, необычные виды музыки, посещаю выставки, театр.", "В современном мире, точно как в пословице – много нового, мало хорошего.", "Обычно мне трудно взяться за новое дело.", "Культурным вполне можно назвать того человека, который имеет высшее образование.", "Если требования начальника противоречат моим моральным или нравственным нормам, я без колебаний сменю место работы, даже если она престижна и очень хорошо оплачиваема.", "Большинство людей живет интересной, насыщенной жизнью.", "Я стараюсь прислушиваться к природному ритму мира.", "Для меня очень важно соблюдать принятые в моей среде правила.", "Для того, чтобы разобраться в сути чего-либо, недостаточно спросить об этом у специалистов.", "Хороший друг никогда не изменит свои симпатии и расположение ко мне.", "Я с интересом, непредвзято и без скептицизма отношусь к культурным традициям самых разных национальностей.", "Жизненные, финансовые обстоятельства не позволяют мне в последнее время следить за новой литературой по моей специальности.", "Лучше жить в стабильных, предсказуемых условиях, даже если они не очень хорошие.", "Я с трудом привыкаю к новому коллективу, работе, месту отдыха.", "Я скептически отношусь ко всякого рода нововведениям, нетрадиционным подходам в живописи, кино, театральных постановках.", "Я все чаще задумываюсь над тем, что время быстротечно и безжалостно.", "Меня радуют те изменения, которые произошли в моей жизни за последнее время.", "Меня не пугает перспектива внезапной необходимости самостоятельно освоить новую сферу знаний.", "Изменить стиль работы, однажды выбранную специальность, образ жизни людей вынуждает необходимость.", "Для того, чтобы без ошибок ориентироваться в политической ситуации совсем не обязательно следить за сменой правительства, и дополнениями к конституции.", "Неожиданные изменения в распорядке дня вызывают у меня раздражение.", "Обычно я легко меняю принятое решение, учитывая разумные аргументы других.", "Я без труда ориентируясь на незнакомой местности.", "Мне всегда достаточно собственных сил, чтобы обратить неблагоприятные обстоятельства на свою пользу."
-];
-
+    "Все знания о мире можно легко получить из книг, компьютерной сети.", "Когда я думаю о будущем, не чувствую страха за свою семью, страну, где я живу.", "Я смог бы побороть страх за свою безопасность и заняться экстремальным видом спорта, прыгнуть с парашютом, нырнуть с аквалангом.", "Я без усилий переключаюсь на рабочий режим после продолжительных праздников или отпуска.", "Продвижение по социальной и профессиональной лестнице – главная причина, по которой я стараюсь овладеть новой информацией, даже если она для меня не интересна.", "Происходящие со мной перемены не вызывают у меня чувства тревоги или беспокойства.", "Рядовой человек не несет ответственности за возникновение озоновых дыр, глобальное загрязнение природной среды и прочие подобные катаклизмы.", "Когда я иду по хорошо знакомой дороге, то сразу подмечаю произошедшие вокруг перемены.", "Любые изменения в социально-политической ситуации приводят к очередному кризису.", "Я - представитель консервативной профессии, поэтому чьи-либо попытки внести изменения в организацию моей работы, только вредят делу.", "Я легко нахожу язык с новым человеком, веду себя как обычно в кругу незнакомых людей.", "Я не придаю особого значения постоянному месту отдыха, питанию.", "Я регулярно и с интересом читаю книги «альтернативных авторов», слушаю новые, необычные виды музыки, посещаю выставки, театр.", "В современном мире, точно как в пословице – много нового, мало хорошего.", "Обычно мне трудно взяться за новое дело.", "Культурным вполне можно назвать того человека, который имеет высшее образование.", "Если требования начальника противоречат моим моральным или нравственным нормам, я без колебаний сменю место работы, даже если она престижна и очень хорошо оплачиваема.", "Большинство людей живет интересной, насыщенной жизнью.", "Я стараюсь прислушиваться к природному ритму мира.", "Для меня очень важно соблюдать принятые в моей среде правила.", "Для того, чтобы разобраться в сути чего-либо, недостаточно спросить об этом у специалистов.", "Хороший друг никогда не изменит свои симпатии и расположение ко мне.", "Я с интересом, непредвзято и без скептицизма отношусь к культурным традициям самых разных национальностей.", "Жизненные, финансовые обстоятельства не позволяют мне в последнее время следить за новой литературой по моей специальности.", "Лучше жить в стабильных, предсказуемых условиях, даже если они не очень хорошие.", "Я с трудом привыкаю к новому коллективу, работе, месту отдыха.", "Я скептически отношусь ко всякого рода нововведениям, нетрадиционным подходам в живописи, кино, театральных постановках.", "Я все чаще задумываюсь над тем, что время быстротечно и безжалостно.", "Меня радуют те изменения, которые произошли в моей жизни за последнее время.", "Меня не пугает перспектива внезапной необходимости самостоятельно освоить новую сферу знаний.", "Изменить стиль работы, однажды выбранную специальность, образ жизни людей вынуждает необходимость.", "Для того, чтобы без ошибок ориентироваться в политической ситуации совсем не обязательно следить за сменой правительства, и дополнениями к конституции.", "Неожиданные изменения в распорядке дня вызывают у меня раздражение.", "Обычно я легко меняю принятое решение, учитывая разумные аргументы других.", "Я без труда ориентируясь на незнакомой местности.", "Мне всегда достаточно собственных сил, чтобы обратить неблагоприятные обстоятельства на свою пользу."];
 // Состояние
 let state = { meta: {}, bratus: {}, rank: 1, milman: {}, ipl: {}, timing: {start: Date.now(), milman_start:0, ipl_start:0} };
 let anonMode = false;
-
 // --- PERSISTENCE ---
 function saveStateToLocal() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); updateProgress(); }
 function loadStateFromLocal() {
@@ -512,19 +549,16 @@ function loadStateFromLocal() {
 }
 function clearState() { localStorage.removeItem(STORAGE_KEY); window.location.reload(); }
 // --- ЛОГИКА МОДАЛЬНОГО ОКНА ЗАГРУЗКИ ---
-
 // Показываем окно
 function showUserImportModal() {
     document.getElementById('user-import-modal').style.display = 'flex';
 }
-
 // Скрываем окно
 function hideUserImportModal() {
     document.getElementById('user-import-modal').style.display = 'none';
     // Сбрасываем сообщение об ошибке при закрытии
     document.getElementById('user-import-error').innerText = ''; 
 }
-
 // Центральная функция для обработки JSON (из файла или текста)
 function processUserJSON(jsonString) {
     const errorDiv = document.getElementById('user-import-error');
@@ -546,7 +580,6 @@ function processUserJSON(jsonString) {
         errorDiv.innerText = "Ошибка: Файл не является корректным JSON.";
     }
 }
-
 // Функция для обработки вставленного из textarea текста
 function processPastedJSON() {
     const text = document.getElementById('user-paste-area').value;
@@ -556,36 +589,30 @@ function processPastedJSON() {
     }
     processUserJSON(text);
 }
-
 // Инициализация обработчиков событий (Drag-n-Drop и выбор файла)
 function initUserImporter() {
     const dropZone = document.getElementById('user-drop-zone');
     const fileInput = document.getElementById('user-file-input');
-
     // --- Drag and Drop ---
     dropZone.addEventListener('dragover', (e) => {
         e.preventDefault();
         e.stopPropagation();
         dropZone.classList.add('drag-over');
     });
-
     dropZone.addEventListener('dragleave', (e) => {
         e.preventDefault();
         e.stopPropagation();
         dropZone.classList.remove('drag-over');
     });
-
     dropZone.addEventListener('drop', (e) => {
         e.preventDefault();
         e.stopPropagation();
         dropZone.classList.remove('drag-over');
-
         const files = e.dataTransfer.files;
         if (files.length > 0) {
             handleFile(files[0]);
         }
     });
-
     // --- File Input ---
     fileInput.addEventListener('change', (e) => {
         const files = e.target.files;
@@ -593,7 +620,6 @@ function initUserImporter() {
             handleFile(files[0]);
         }
     });
-
     // --- Общий обработчик файла ---
     function handleFile(file) {
         const reader = new FileReader();
@@ -602,7 +628,6 @@ function initUserImporter() {
         };
         reader.readAsText(file);
     }
-    
     // Закрытие по клику на фон
     document.getElementById('user-import-modal').addEventListener('click', (e) => {
         if (e.target.id === 'user-import-modal') {
@@ -610,10 +635,8 @@ function initUserImporter() {
         }
     });
 }
-
 // Запускаем инициализацию после загрузки страницы
 window.addEventListener('DOMContentLoaded', initUserImporter);
-
 // INIT
 window.onload = function() {
     if (localStorage.getItem(STORAGE_KEY)) {
@@ -631,7 +654,6 @@ window.onload = function() {
         }
     }
 };
-
 function restoreForm() {
     if (state.meta.mode === 'anon' || state.meta.fio === "Аноним") {
         document.getElementById('anon_mode').checked = true;
@@ -640,38 +662,30 @@ function restoreForm() {
     for(let k in state.meta) { let el = document.getElementById(k); if(el) el.value = state.meta[k]; }
     toggleWorkPlace(); toggleEduBlock(); toggleKmnsName();
 }
-
 function updateProgress() {
     let progressFill = document.getElementById('progress');
     let progressBarContainer = document.querySelector('.progress-bar');
-    
     // 1. Считаем реальные ответы пользователя
     let bratusCount = Object.keys(state.bratus).length; // Максимум 8
     let milmanCount = Object.keys(state.milman).length; // Максимум 112
     let iplCount = Object.keys(state.ipl).length;       // Максимум 36
-
     let totalSteps = 8 + 112 + 36; // Всего 156
     let currentSteps = bratusCount + milmanCount + iplCount;
-
     let pct = (currentSteps / totalSteps) * 100;
-
     // На стартовом экране сбрасываем в 0
     if (document.getElementById('step-form').classList.contains('active') || currentSteps === 0) {
         pct = 0;
     } else if (pct < 2) {
         pct = 2; // Чтобы было видно начало на первом вопросе
     }
-
     // 2. Устанавливаем ширину
     progressFill.style.width = pct + "%";
-
     // 3. Красим в зеленый, если ответил на ВСЕ вопросы
     if (pct >= 100) {
         progressFill.style.backgroundColor = "var(--success)"; // Зеленый
     } else {
         progressFill.style.backgroundColor = "var(--primary)"; // Синий
     }
-
     // 4. Прячем бар на экране результатов
     // Используем setTimeout, чтобы дождаться окончания анимации switchStep (200мс)
     setTimeout(() => {
@@ -691,14 +705,12 @@ function checkSmartButtons() {
         if (checkedCount === 3) bratusBtn.classList.add('smart-sticky');
         else bratusBtn.classList.remove('smart-sticky');
     }
-
     // 2. Мильман (Ждем 112 ответов: 14 вопросов * 8 вариантов)
     let milmanBtn = document.querySelector('#step-milman .btn-container');
     if (milmanBtn) {
         if (Object.keys(state.milman).length === 112) milmanBtn.classList.add('smart-sticky');
         else milmanBtn.classList.remove('smart-sticky');
     }
-
     // 3. ИПЛ (Ждем 36 ответов)
     let iplBtn = document.querySelector('#step-ipl .btn-container');
     if (iplBtn) {
@@ -706,14 +718,12 @@ function checkSmartButtons() {
         else iplBtn.classList.remove('smart-sticky');
     }
 }
-
 // --- GOD MODE (DEV) ---
 function checkDevMode(val) {
     if(val.toLowerCase().trim() === 'dev') {
         document.getElementById('dev-panel').style.display = 'block';
     }
 }
-
 function fillRandomData() {
     state.meta = { fio: "Тестовый Юзер", gender: "Мужской", age: "25", family_status: "Холост/Не замужем", children: "Нет", is_working: "Да", work_place: "IT", has_secondary_edu: "Нет", edu_status: "Учусь", university: "СурГУ", speciality: "Психология", edu_level: "Бакалавриат", edu_basis: "Бюджет", course: "4", mode: "dev" };
     
@@ -733,7 +743,6 @@ function fillRandomData() {
     saveStateToLocal();
     finishSurvey();
 }
-
 function loadDevJSON() {
     try {
         let json = document.getElementById('dev-json-input').value;
@@ -750,7 +759,6 @@ function loadDevJSON() {
         document.getElementById('dev-error').innerText = "Ошибка парсинга: " + e.message;
     }
 }
-
 // --- ЛОГИКА ---
 function toggleAnon() {
     anonMode = document.getElementById('anon_mode').checked;
@@ -758,10 +766,9 @@ function toggleAnon() {
     document.getElementById('anon_warning').style.display = anonMode ? 'block' : 'none';
     document.querySelectorAll('.req').forEach(el => el.style.display = anonMode ? 'none' : 'inline');
     const inputs = document.querySelectorAll('#step-form input:not(#anon_mode), #step-form select');
-    inputs.forEach(el => el.style.backgroundColor = anonMode ? '#f9f9f9' : '#fff');
+    inputs.forEach(el => el.style.backgroundColor = anonMode ? 'var(--bg)' : 'var(--input-bg)');
     saveStateToLocal();
 }
-
 function toggleWorkPlace() { document.getElementById('work_place_block').style.display = (document.getElementById('is_working').value === "Да") ? 'block' : 'none'; }
 function toggleEduBlock() {
     const status = document.getElementById('edu_status').value;
@@ -776,7 +783,6 @@ function toggleKmnsName() {
         document.getElementById('kmns_name').value = "";
     }
 }
-
 function validateForm() {
     // 1. Формируем список актуальных полей в зависимости от статуса обучения
     let ids = ['fio','gender','age','is_kmns','family_status','children','is_working','has_secondary_edu','edu_status'];
@@ -820,14 +826,12 @@ function validateForm() {
             }
             if(el) el.style.borderColor = "#ddd"; // Убираем красные рамки, если были
         });
-        
         // Защита от дурака: принудительно стираем ФИО в анонимном режиме
         state.meta['fio'] = "Аноним"; 
         
         // Сохраняем kmns_name
         let kmnsEl = document.getElementById('kmns_name');
         state.meta['kmns_name'] = (kmnsEl && kmnsEl.value && kmnsEl.value.trim() !== "") ? kmnsEl.value : "Аноним";
-
         // --- ЛОГИКА "SOFT ASK" (Мягкая просьба) ---
         // Проверяем, заполнил ли аноним наши самые главные поля (пол и возраст)
         let ageVal = state.meta['age'];
@@ -839,14 +843,12 @@ function validateForm() {
             return; // Прерываем переход, пока не нажмут кнопку в модалке
         }
     }
-    
     // Если всё ок (или Soft Ask уже пройден), идем дальше
     document.getElementById('form-error').style.display = 'none';
     saveStateToLocal();
     switchStep('step-form', 'step-bratus');
     renderBratus();
 }
-
 function renderBratus() {
     const c = document.getElementById('bratus-options'); c.innerHTML = "";
     document.getElementById('bratus-sub').innerHTML = `Выберите <b>3</b> утверждения для <b>${state.rank}-го места</b>`;
@@ -1108,7 +1110,6 @@ for(let q = 0; q < 14; q++) {
                 // ===== МОТИВАЦИЯ =====
                 let sub = sub_map[q]; 
                 let [scope, state2] = sub.split('_'); 
-
                 // Проверяем, существует ли такая шкала (защита от ошибок)
                 if(m_scores[scope][state2][scale] !== undefined) {
                     m_scores[scope][state2][scale] += val;
@@ -1129,10 +1130,8 @@ for(let q = 0; q < 14; q++) {
     }
 }
 // --- КОНЕЦ ОБНОВЛЕННОГО ЦИКЛА ---
-
    let emoIsUndefined = false;
    let emoTypeText = "<span class='score-badge bg-blue'>Не определён</span> Не удаётся однозначно отнести профиль к одному из типов";
-
 if (emo.E_st > emo.E_ast && emo.F_st > emo.F_ast) {
     emoTypeText = "<span class='score-badge bg-blue'>Стенический</span> — деятельный и устойчивый тип. Вы не только предпочитаете активные, бодрые эмоции, но и в трудных ситуациях действуете собранно, конструктивно и не падаете духом. Стресс вас мобилизует.";
 }
@@ -1167,7 +1166,6 @@ if (emoTypeText === "<span class='score-badge bg-blue'>Не определён</
     warning.style.display = "none";
 }
 // ===== ДАННЫЕ ДЛЯ ГРАФИКОВ МИЛЬМАНА =====
-
 const scales_order = ['P','K','S','O','D','DR','OD'];
 const scales_names = [
   'Жизнеобеспечение',
@@ -1178,7 +1176,6 @@ const scales_names = [
   'Творческая активность',
   'Общественная польза'
 ];
-
 // ЖИЗНЬ
 let life_ideal_data = scales_order.map(s => m_scores.life.ideal[s]);
 let life_real_data  = scales_order.map(s => m_scores.life.real[s]);
@@ -1206,15 +1203,11 @@ let integral = {};
 scales_order.forEach((s, i) => {
     integral[s] = integral_ideal_data[i];
 });
-
 // ===== ТИП МОТИВАЦИОННОГО ПРОФИЛЯ (ПО ИНТЕГРАЛУ ИДЕАЛОВ) =====
-
 let sum_develop = integral.D + integral.DR + integral.OD;
 let sum_maintain = integral.P + integral.K + integral.S;
 let diff = sum_develop - sum_maintain;
-
 let motivationTypeText = "";
-
 if (diff >= 5) {
     motivationTypeText = "<span class='score-badge bg-blue'>Прогрессивный</span> Вы — человек роста. Для вас важнее двигаться вперёд, осваивать новое и развиваться, чем просто сохранять текущее положение дел. Это качество часто ведёт к успеху в работе и учёбе.";
 }
@@ -1225,10 +1218,8 @@ else {
     // считаем пики
     let values = scales_order.map(s => integral[s]);
     let peaks = 0;
-
     for(let i = 0; i < values.length; i++) {
         let v = values[i];
-
         if (i === 0) {
             if (v >= values[1] + 4) peaks++;
         }
@@ -1239,12 +1230,10 @@ else {
             if (v >= values[i-1] + 2 && v >= values[i+1] + 2) peaks++;
         }
     }
-
     if (peaks >= 3) motivationTypeText = "<span class='score-badge bg-blue'>Импульсивный</span> Ваша мотивация — это внутренние качели. У вас одновременно есть несколько очень сильных, но разных и даже противоречивых желаний. Из-за этого ваши интересы и энергия могут часто и резко переключаться.";
     else if (peaks === 2) motivationTypeText = "<span class='score-badge bg-blue'>Экспрессивный</span> У вас чёткие приоритеты: вы ярко выделяете что-то важное для себя как в сфере комфорта, так и в сфере достижений. Вы стремитесь к самоутверждению и любите, когда ваши успехи и особенности замечают другие.";
     else motivationTypeText = "<span class='score-badge bg-blue'>Уплощенный</span> У вас нет ярко выраженных «вершин» или «провалов» среди мотивов — все они выражены примерно одинаково. Это может означать, что пока нет чётких жизненных приоритетов или внутренняя картина желаний недостаточно ясна. Заметна тенденция его уменьшения с возрастом.";
 }
-
     // 3. ИПЛ
     let ipl_sum = 0;
     let rev_idx = [0, 4, 6, 8, 9, 13, 14, 15, 19, 21, 23, 24, 25, 26, 27, 30, 31, 32];
@@ -1325,28 +1314,22 @@ function A2(q, inv = false) {
 let ipl_aspects = {
     G: A2(1,true) + A2(5,true) + A2(8) + A2(13) + A2(16,true) + A2(17) + A2(21) + 
        A2(24,true) + A2(25,true) + A2(30) + A2(32,true) + A2(34),
-
     A: A2(2) + A2(6) + A2(9,true) + A2(14,true) + A2(18) + A2(19) +
        A2(22,true) + A2(23) + A2(27,true) + A2(28,true) + A2(29) + A2(33,true),
-
     P: A2(3) + A2(4) + A2(7,true) + A2(10,true) + A2(11) + A2(12) +
        A2(15,true) + A2(20,true) + A2(26,true) + A2(31,true) + A2(35) + A2(36)
 };
     // ===== ЭТАП 3. Уровни взаимодействия с миром =====
-
 let ipl_levels = {
     nature:
         A2(1,true) + A2(6) + A2(7,true) + A2(8) + A2(12) +
         A2(19) + A2(21) + A2(28,true) + A2(35),
-
     social:
         A2(2) + A2(5,true) + A2(9,true) + A2(11) +
         A2(22,true) + A2(26,true) + A2(31,true) + A2(32,true) + A2(34),
-
     culture:
         A2(3) + A2(10,true) + A2(13) + A2(14,true) +
         A2(16,true) + A2(20,true) + A2(23) + A2(24,true) + A2(27,true),
-
     life:
         A2(4) + A2(15,true) + A2(17) + A2(18) +
         A2(25,true) + A2(29) + A2(30) + A2(33,true) + A2(36)
@@ -1356,24 +1339,20 @@ function renderBigScalesBlock(title, dataArr, maxValue, color, labelsMap) {
         <div style="margin-top:25px;">
             <h3 style="margin-bottom:15px;">${title}</h3>
     `;
-
     dataArr.forEach(item => {
         let percent = Math.max(5, (item.value / maxValue) * 100);
-
         html += `
             <div style="margin-bottom:14px;">
                 <div style="display:flex; justify-content:space-between; font-size:1.05em; margin-bottom:4px;">
                     <div><b>${labelsMap[item.key]}</b></div>
                     <div><b>${item.value}</b></div>
                 </div>
-
-                <div style="background:#eee; border-radius:8px; overflow:hidden; height:22px;">
+                <div style="background:var(--border); border-radius:8px; overflow:hidden; height:22px;">
                     <div style="width:${percent}%; height:100%; background:${color};"></div>
                 </div>
             </div>
         `;
     });
-
     html += `
         <div style="display:flex; justify-content:space-between; font-size:0.9em; color:#666; margin-top:4px;">
             <div>0</div>
@@ -1381,7 +1360,6 @@ function renderBigScalesBlock(title, dataArr, maxValue, color, labelsMap) {
         </div>
         </div>
     `;
-
     return html;
 }
 //шкалы типов реализации инновационного потенциала
@@ -1391,17 +1369,15 @@ function renderScalesBlock(title, dataObj, maxValue, color, descriptionHTML = ""
         margin-top:25px;
         padding:18px;
         border-radius:12px;
-        background:#f8f9fa;
-        border:1px solid #ddd;
+        background:var(--surface);
+        border:1px solid var(--border);
     ">
         <h2 style="margin-top:0;">${title}</h2>
         ${descriptionHTML}
     `;
-
     for (let key in dataObj) {
         let val = dataObj[key];
         let percent = Math.max(2, (val / maxValue) * 100);
-
         html += `
         <div style="display:flex; justify-content:space-between; font-size:1.05em; margin-bottom:4px;">
     <div style="max-width:85%;">
@@ -1409,13 +1385,12 @@ function renderScalesBlock(title, dataObj, maxValue, color, descriptionHTML = ""
     </div>
     <div><b>${val}</b></div>
 </div>
-                <div style="background:#eee; border-radius:8px; overflow:hidden; height:22px;">
+                <div style="background:var(--border); border-radius:8px; overflow:hidden; height:22px;">
                     <div style="width:${percent}%; height:100%; background:${color};"></div>
                 </div>
             </div>
         `;
     }
-
     html += `
         <div style="display:flex; justify-content:space-between; font-size:0.85em; color:#666; margin-top:-5px;">
             <div>0</div>
@@ -1423,69 +1398,56 @@ function renderScalesBlock(title, dataObj, maxValue, color, descriptionHTML = ""
         </div>
     </div>
     `;
-
     return html;
 }
 //визуальное сравнение пар типов реакций
 function renderIPLTypesPairs(ipl_types) {
     const MAX = 30; // 6 вопросов * 5 баллов
-
     function bar(name, value, isWinner, isEqual) {
         let base = "rgb(0,128,128)";
         let bg = isWinner ? base : "rgba(0,128,128,0.35)";
         let border = isWinner ? "3px solid #004d4d" : "1px solid #ccc";
-
         if (isEqual) {
             bg = "rgba(160,160,160,0.4)";
             border = "1px dashed #888";
         }
-
         let percent = Math.max(3, value / MAX * 100);
-
         return `
         <div style="margin-bottom:8px;">
             <div style="display:flex; justify-content:space-between; font-size:1.1em;">
                 <div><b>${name}</b></div>
                 <div>${value}</div>
             </div>
-            <div style="background:#eee; border-radius:6px; overflow:hidden; height:18px; border:${border}">
+            <div style="background:var(--border); border-radius:6px; overflow:hidden; height:18px; border:${border}">
                 <div style="width:${percent}%; height:100%; background:${bg};"></div>
             </div>
         </div>
         `;
     }
-
     function pairBlock(title, desc, aKey, aName, bKey, bName) {
         let a = ipl_types[aKey];
         let b = ipl_types[bKey];
-
         let aWin = a > b;
         let bWin = b > a;
         let isEqual = a === b;
-
         let note = "";
         if (isEqual) {
             note = `<div style="margin-top:6px; font-size:1.2em; color:#555;">⚠️ Различия не выявлены</div>`;
         }
-
         return `
-        <div style="border:1px solid #ddd; border-radius:10px; padding:12px; margin-bottom:15px;">
+        <div style="border:1px solid var(--border); border-radius:10px; padding:12px; margin-bottom:15px;">
             <div style="font-size:1.1em; line-height:1.6; margin-bottom:12px;">${title}</div>
             <div style="font-size:1.1em; line-height:1.6; margin-bottom:12px;">${desc}</div>
-
             ${bar(aName, a, aWin, isEqual)}
             ${bar(bName, b, bWin, isEqual)}
-
             <div style="display:flex; justify-content:space-between; font-size:0.8em; color:#666; margin-top:-4px;">
                 <div>0</div>
                 <div>${MAX}</div>
             </div>
-
             ${note}
         </div>
         `;
     }
-
     let html = `
     <h3>Типы реализации инновационного потенциала</h3>
     <div style="font-size:1.1em; line-height:1.6; margin-bottom:12px;">
@@ -1493,28 +1455,24 @@ function renderIPLTypesPairs(ipl_types) {
         как ищете новое, как оцениваете изменения и как действуете в новой ситуации.
     </div>
     `;
-
     html += pairBlock(
         "<b>🧠 Обнаружение новой информации</b>",
         "Как вы ищете и осваиваете новое.",
         "OI", "Осмысленно-интенсивный",
         "FN", "Формально-накопительский"
     );
-
     html += pairBlock(
         "<b>⚖️ Оценка нового</b>",
         "Как вы относитесь к изменениям и нововведениям.",
         "PD", "Позитивно-дифференцированный",
         "NG", "Негативно-генерализованный"
     );
-
     html += pairBlock(
         "<b>🚀 Действие в новой ситуации</b> ",
         "Как вы ведёте себя, когда ситуация требует изменений.",
         "IP", "Инициативно-преобразовательный",
         "VP", "Вынужденно-приспособительный"
     );
-
     return html;
 }
     // ============================================================
@@ -1553,26 +1511,17 @@ function renderIPLTypesPairs(ipl_types) {
                 document.getElementById('success-checkmark').style.display = 'none';
             }, 500);
         }
-        
         document.getElementById('result-area').value = JSON.stringify(state, null, 2);
-
-        
-      // --- НОВЫЙ ВИЗУАЛ БРАТУСЯ ---
-
+// --- НОВЫЙ ВИЗУАЛ БРАТУСЯ ---
 // Собираем массив
 let brArr = [];
 for(let i=0;i<b_labels.length;i++) {
     brArr.push({ name: b_labels[i], sum: b_data[i] });
 }
-
 // Сортируем: чем меньше сумма — тем выше
 brArr.sort((a,b) => a.sum - b.sum);
-
-
-
 // Рисуем
 let html = `<div style="font-weight:bold; text-align:center; margin-bottom:10px;">Жизненные смыслы</div>`;
-
 brArr.forEach(row => {
     let cls = '';
     let color = '';
@@ -1586,14 +1535,13 @@ brArr.forEach(row => {
     html += `
         <div style="display:flex; align-items:center; margin-bottom:8px; gap:10px;">
             <div style="width:180px; font-size:1.1em;">${row.name}</div>
-            <div style="flex:1; background:#eee; border-radius:6px; overflow:hidden; height:18px;">
+            <div style="flex:1; background:var(--border); border-radius:6px; overflow:hidden; height:18px;">
                 <div style="width:${percent}%; height:100%; background:${color};"></div>
             </div>
             <div style="width:40px; text-align:right; font-weight:bold;">${row.sum}</div>
         </div>
     `;
 });
-
 html += `
 <div style="margin-top:10px; text-align:center; font-size:1.1em;">
     <span style="color:#27ae60; font-weight:bold;">■</span> ведущие →
@@ -1602,10 +1550,7 @@ html += `
 </div>
 `;
 document.getElementById('textBratus').innerHTML = html + '<div style="margin-top:15px;">' + b_desc + '</div>';
-
-        
 if(window.chartM) window.chartM.destroy();
-
 window.chartM = new Chart(document.getElementById('chartMilman').getContext('2d'), {
     type: 'line',
     data: {
@@ -1648,12 +1593,10 @@ document.getElementById('textMilman').innerHTML = `
         <div><b>Тип эмоционального профиля:</b> ${emoTypeText}</div>
     </div>
 `;
-
         let ipl_level = ipl_sum >= 118 ? "Высокий" : (ipl_sum >= 95 ? "Средний" : "Низкий");
         let ipl_cls = ipl_sum >= 118 ? "bg-green" : (ipl_sum >= 95 ? "bg-blue" : "bg-red");
         let ipl_text = ipl_sum >= 118 ? "<b>Высокий уровень инновационного потенциала личности.</b> Вы ориентированы на развитие, поиск новых возможностей и преобразование ситуации. Новые задачи и изменения скорее воспринимаются как интересный вызов, чем как угроза. Вам свойственно самостоятельно искать новые способы действий и пересматривать привычные подходы. " : (ipl_sum >= 95 ? "<b>Средний уровень инновационного потенциала личности .</b> Вы в целом открыты к новому, но подходите к изменениям избирательно и осознанно. Прежде чем что-то менять, вам важно понять смысл, пользу и возможные последствия. Вы готовы осваивать новое, если видите в этом практическую ценность." : "<b>Низкий уровень инновационного потенциала личности.</b> Вы в целом открыты к новому, но подходите к изменениям избирательно и осознанно. Прежде чем что-то менять, вам важно понять смысл, пользу и возможные последствия. Вы готовы осваивать новое, если видите в этом практическую ценность.");
         let iplPercent = Math.round((ipl_sum / 180) * 100);
-
 let iplColor =
     ipl_sum >= 118 ? "linear-gradient(90deg, #2ecc71, #27ae60)" :
     ipl_sum >= 95  ? "linear-gradient(90deg, #3498db, #2980b9)" :
@@ -1668,14 +1611,11 @@ let iplColor =
     <div style="display:flex; justify-content:space-between; font-size:0.9em;">
        
     </div>
-    <div style="background:#eee; border-radius:20px; height:30px; overflow:hidden;">
+    <div style="background:var(--border); border-radius:20px; height:30px; overflow:hidden;">
         <div style="height:100%; width:${iplPercent}%; background:${iplColor};"></div>
     </div>
     <p>${ipl_text}</p>
-</div>
-        `;
-        
-
+</div>`;
 let detailsHTML = "";
 // 1. Типы реализации (попарное сравнение)
 detailsHTML += renderIPLTypesPairs(ipl_types);
@@ -1683,16 +1623,15 @@ let styleHTML = `<div style="
     margin-top:25px;
     padding:18px;
     border-radius:12px;
-    background:#f8f9fa;
-    border:1px solid #ddd;
+    background:var(--surface);
+    border:1px solid var(--border);
 ">`;
 // Если стиль не определен, изменяем стиль фона
 if(!iplStyleDefined) {
-    styleHTML = styleHTML.replace('background:#f8f9fa;', 'background:#fff3cd;')
-                         .replace('border:1px solid #ddd;', 'border:1px solid #ffeeba;');
+    styleHTML = styleHTML.replace('background:var(--surface);', 'background:var(--anon-bg);')
+                         .replace('border:1px solid var(--border);', 'border:1px solid var(--border);');
 }
 styleHTML += `<h2 style="margin-top:0;">🧬 Стиль реализации инновационного потенциала</h2>`;
-
 if (!iplStyleDefined) {
     styleHTML += `
         <div style="font-size:1.05em;">
@@ -1714,7 +1653,6 @@ if (!iplStyleDefined) {
         </div>
     `;
 }
-
 styleHTML += `</div>`;
 // 2. Стиль
 detailsHTML += styleHTML;
@@ -1732,8 +1670,7 @@ detailsHTML += renderBigScalesBlock(
         G: " Гносеологический аспект (Г) – возможность обнаружения нового и ориентации в нем",
         A: "Аксиологический (А) – возможность адекватной оценки нового явления",
         P: "Праксеологический (П) – возможность эффективно действовать в новой ситуации"
-    }
-);
+    });
 // ===== ТИП ДОМИНИРОВАНИЯ АСПЕКТОВ =====
 let aspectArr = [
     { key: "G", val: ipl_aspects.G },
@@ -1746,15 +1683,12 @@ const aspectKeyRU = {
   P: "П"
 };
 aspectArr.sort((a, b) => b.val - a.val);
-
 // проверка на равенства
 let aspectsDefined = true;
 if (aspectArr[0].val === aspectArr[1].val || aspectArr[1].val === aspectArr[2].val) {
     aspectsDefined = false;
 }
-
 let aspectTypeKeyRU = aspectArr.map(x => aspectKeyRU[x.key]).join("");
-
 const ASPECT_DOMINANCE_INFO = {
     "ПГА": "Доминирующей является возможность к продуктивной инновационной деятельности (П), в качестве субдоминанты и фона выступают, соответственно, возможность к обнаружению новой информации (Г) и адекватной оценке новых явлений (А).",
     "ПАГ": "Доминирующей является возможность к продуктивной инновационной деятельности (П), в качестве субдоминанты и фона выступают, соответственно, возможность к адекватной оценке новых явлений (А) и обнаружению новой информации (Г).",
@@ -1763,23 +1697,20 @@ const ASPECT_DOMINANCE_INFO = {
     "ГПА": "Доминирующей является возможность к обнаружению новой информации (Г), в качестве субдоминанты и фона выступают, соответственно, возможность продуктивной инновационной деятельности (П) и к адекватной оценке новых явлений (А).",
 
     "АПГ": "Доминирующей является возможность к адекватной оценке новых явлений (А), в качестве субдоминанты и фона выступают, соответственно, возможность продуктивной инновационной деятельности (П) и возможность к обнаружению новой информации (Г).",
-    "АГП": "Доминирующей является возможность к адекватной оценке новых явлений (А), в качестве субдоминанты и фона выступают, соответственно, возможность к обнаружению новой информации (Г) и продуктивной инновационной деятельности (П)."
-};
+    "АГП": "Доминирующей является возможность к адекватной оценке новых явлений (А), в качестве субдоминанты и фона выступают, соответственно, возможность к обнаружению новой информации (Г) и продуктивной инновационной деятельности (П)."};
 // ===== БЛОК ТИПА ДОМИНИРОВАНИЯ АСПЕКТОВ =====
 let aspectTypeHTML = `
 <div style="
     margin-top:25px;
     padding:18px;
     border-radius:12px;
-    background:#f8f9fa;
-    border:1px solid #ddd;
-">
-    <h2 style="margin-top:0;">🧠 Особенности доминирования инновационных возможностей</h2>
-`;
+    background:var(--surface);
+    border:1px solid var(--border);">
+    <h2 style="margin-top:0;">🧠 Особенности доминирования инновационных возможностей</h2>`;
 // Если аспекты не определены, изменяем стиль фона
 if(!aspectsDefined) {
-    aspectTypeHTML = aspectTypeHTML.replace('background:#f8f9fa;', 'background:#fff3cd;')
-                                   .replace('border:1px solid #ddd;', 'border:1px solid #ffeeba;');
+    aspectTypeHTML = aspectTypeHTML.replace('background:var(--surface);', 'background:var(--anon-bg);')
+                                   .replace('border:1px solid var(--border);', 'border:1px solid var(--border);');
 }
 if (!aspectsDefined) {
     
@@ -1801,9 +1732,7 @@ if (!aspectsDefined) {
         </div>
     `;
 }
-
 aspectTypeHTML += `</div>`;
-
 detailsHTML += aspectTypeHTML;
 //4. ===== УРОВНИ =====
 detailsHTML += renderBigScalesBlock(
@@ -1821,8 +1750,7 @@ detailsHTML += renderBigScalesBlock(
         social: "Социальный",
         culture: "Культурный",
         life: "Организация собственной жизни"
-    }
-);
+    });
 document.getElementById("detailsIPL").innerHTML = detailsHTML;
         // ========================================
         // === СОХРАНЕНИЕ ДАННЫХ ДЛЯ ЭКСПОРТА  ===
@@ -1847,16 +1775,13 @@ document.getElementById("detailsIPL").innerHTML = detailsHTML;
             
             return { title, desc };
         };
-
         const clean = (t) => {
             let d = document.createElement("div"); d.innerHTML = t || "";
             return d.innerText.trim();
         };
-
         // Разбираем тексты Мильмана
         const milmanMot = parseResultText(motivationTypeText);
         const milmanEmo = parseResultText(emoTypeText);
-
         window.FULL_REPORT_CACHE = {
             ready: true,
             bratus: {
@@ -1899,14 +1824,13 @@ document.getElementById("detailsIPL").innerHTML = detailsHTML;
             }
         };
         console.log("CACHE SAVED FIXED!", window.FULL_REPORT_CACHE);
-        // ======================================================================
+// ======================================================================
     }, immediate ? 0 : 2000);
-   // --- ДОПОЛНЕНИЕ: Расчет профиля для сфер Жизнь и Работа ---
-   const spheresToProcess = [
+// --- ДОПОЛНЕНИЕ: Расчет профиля для сфер Жизнь и Работа ---
+        const spheresToProcess = [
         { scores: m_scores.life.ideal, elementId: 'textMilmanLife', label: 'Жизнь' },
         { scores: m_scores.work.ideal, elementId: 'textMilmanWork', label: 'Работа / Учёба' }
     ];
-
     spheresToProcess.forEach(sphere => {
         let s = sphere.scores;
         let s_develop = (s.D || 0) + (s.DR || 0) + (s.OD || 0);
@@ -1947,16 +1871,13 @@ function copyResult() {
     txt.style.display = 'block'; 
     txt.select(); 
     document.execCommand('copy'); 
-    document.getElementById('copy-msg').style.display = 'block'; 
-}
-
+    document.getElementById('copy-msg').style.display = 'block'; }
 function validateGroup(prefix, c1, c2) {
     let err = null; let cont = prefix==='m'?state.milman:state.ipl;
     if(c2===1) { for(let i=0;i<c1;i++) if(!cont[i]) { err=document.getElementById('row_ipl_'+i); err.classList.add('highlight-error'); break; } }
     else { for(let q=0;q<c1;q++) for(let i=0;i<c2;i++) if(cont[`${q}_${i}`]===undefined) { err=document.getElementById(`row_m_${q}_${i}`); err.classList.add('highlight-error'); break; } }
     if(err) { err.scrollIntoView({behavior:"smooth", block:"center"}); document.getElementById(prefix==='m'?'milman-error':'ipl-error').style.display='block'; return false; }
-    return true;
-}
+    return true;}
 function toggleDetails(id) {
     const el = document.getElementById(id);
     if (!el) return;
@@ -1976,9 +1897,7 @@ function renderMilmanDetailedCharts() {
         console.warn("Нет данных Мильмана для отрисовки");
         return;
     }
-
     const { scales_names, life_ideal_data, life_real_data, work_ideal_data, work_real_data } = window.milmanData;
-
     // Уничтожаем старые графики, ТОЛЬКО если это Chart
     if (window.chartMilmanLife && typeof window.chartMilmanLife.destroy === "function") {
         window.chartMilmanLife.destroy();
@@ -1986,7 +1905,6 @@ function renderMilmanDetailedCharts() {
     if (window.chartMilmanWork && typeof window.chartMilmanWork.destroy === "function") {
         window.chartMilmanWork.destroy();
     }
-
     // ЖИЗНЬ
     const ctxLife = document.getElementById('chartMilmanLife');
     if (ctxLife) {
@@ -2019,7 +1937,6 @@ function renderMilmanDetailedCharts() {
             }
         });
     }
-
     // РАБОТА
     const ctxWork = document.getElementById('chartMilmanWork');
     if (ctxWork) {
@@ -2050,17 +1967,13 @@ function renderMilmanDetailedCharts() {
             }
         });
     }
-    // ===== ЭМОЦИОНАЛЬНЫЙ ПРОФИЛЬ (ПО МИЛЬМАНУ) =====
-
+// ===== ЭМОЦИОНАЛЬНЫЙ ПРОФИЛЬ (ПО МИЛЬМАНУ) =====
 if (window.chartMilmanEmo && typeof window.chartMilmanEmo.destroy === "function") {
     window.chartMilmanEmo.destroy();
 }
-
 const ctxEmo = document.getElementById("chartMilmanEmo");
 if (ctxEmo) {
-
     const labels = ["Обычное состояние", "Стрессовая ситуация"];
-
     window.chartMilmanEmo = new Chart(ctxEmo.getContext("2d"), {
         type: "line",
         data: {
@@ -2113,9 +2026,7 @@ if (ctxEmo) {
 // МОДУЛЬ ЭКСПОРТА PDF 
 // ==========================================
 const txt = (v) => (v !== undefined && v !== null) ? String(v) : '-';
-
 window.exportReportPDF = async function() {
-    
     const btn = event ? event.target : null;
     if(btn) { btn.innerText = "⏳ Подготовка..."; btn.disabled = true; }
 
@@ -2124,14 +2035,11 @@ window.exportReportPDF = async function() {
         const logoBase64 = await getImageDataUrl('icons/icon-128.png');
         if(!window.FULL_REPORT_CACHE || !window.FULL_REPORT_CACHE.ready) 
             throw new Error("Данные еще не готовы. Подождите пару секунд.");
-            
         const CACHE = window.FULL_REPORT_CACHE;
         const timestamp = new Date().toLocaleDateString();
-
         // КОЭФФИЦИЕНТ КАЧЕСТВА (2 = Retina, 3 = Print)
         // 2 достаточно для четкого текста, 3 может вызвать зависание на слабых ПК
         const SCALE = 2; 
-        
         // Плагин для цифр (Адаптирован под масштаб)
         const valPlugin = { 
             id: 'val', 
@@ -2152,9 +2060,7 @@ window.exportReportPDF = async function() {
                     })
                 }); 
                 ctx.restore();
-            } 
-        };
-
+            } };
         // Базовые настройки шрифтов для всех графиков
         const commonOpts = {
             animation: false,
@@ -2164,11 +2070,8 @@ window.exportReportPDF = async function() {
             scales: {
                 x: { ticks: { font: { size: 15 * SCALE, weight: 'bold' } } },
                 y: { ticks: { font: { size: 15 * SCALE, weight: 'bold' } } }
-            }
-        };
-
+            }};
         // --- ГЕНЕРАЦИЯ ГРАФИКОВ (ПО ОЧЕРЕДИ) ---
-        
         if(btn) btn.innerText = "⏳ Генерация Графика 1/9";
         // Братусь
         // Кастомный плагин для Братуся тоже адаптируем под SCALE
@@ -2177,8 +2080,7 @@ window.exportReportPDF = async function() {
                 const ctx=c.ctx; ctx.save(); ctx.font=`bold ${16 * SCALE}px Roboto`; ctx.fillStyle='#000'; 
                 c.getDatasetMeta(0).data.forEach((b,i)=>{ ctx.fillText(CACHE.bratus.rows[i].sum, b.x + (10 * SCALE), b.y + (4 * SCALE)); }); 
                 ctx.restore(); 
-            }
-        };
+            }};
         const cBr = await generateChart({ 
             type: 'bar', 
             data: { labels: CACHE.bratus.rows.map(r=>r.name), datasets: [{ data: CACHE.bratus.rows.map(r=>25-r.sum), backgroundColor: CACHE.bratus.rows.map(r=>r.sum<=9?'#27ae60':r.sum<=17?'#2980b9':'#e74c3c') }] }, 
@@ -2256,7 +2158,6 @@ window.exportReportPDF = async function() {
                 {columns: [{image: logoBase64 ? logoBase64 : null, width: 50,height: 50},{text: 'Результаты психологического исследования',style: 'header',alignment: 'left',
                 margin: [20, 10, 0, 0] }],columnGap: 10,margin: [0, 0, 0, 20] },
                 { text: `Участник: ${state.meta.fio || 'Аноним'} | Дата: ${timestamp}`, style: 'subheader' },
-
                 // БРАТУСЬ
                 { text: '\n1. Система жизненных смыслов', style: 'h2' },
                 { image: cBr, width: 550 },
@@ -2264,7 +2165,6 @@ window.exportReportPDF = async function() {
                 { table: { widths: ['30%', '15%', '15%', '15%', '10%', '15%'], body: tables.bratus }, layout: 'lightHorizontalLines' },
                 { text: CACHE.bratus.desc, style:'small', margin:[0,10] },
                 { text: '', pageBreak: 'after' },
-
                 // МИЛЬМАН
                 { text: '2. Мотивационная структура', style: 'h2' },
                 { text: [ {text: 'Тип мотивационного профиля: ', bold:true}, CACHE.milman.motType ] },
@@ -2303,7 +2203,6 @@ window.exportReportPDF = async function() {
                     lineHeight: 1.3
                 },
                 { text: '', pageBreak: 'after' },
-
                 // ИПЛ
                 { text: '3. Инновационный потенциал', style: 'h2' },
                 { text: [ {text:'Общий уровень: ', bold:true}, `${CACHE.ipl.sum} (${CACHE.ipl.level})` ], fontSize:12 },
@@ -2338,7 +2237,6 @@ window.exportReportPDF = async function() {
                 code: { fontSize: 8, font: 'Roboto', background: '#f5f5f5' }
             }
         };
-
         pdfMake.createPdf(docDef).download(`Result_${state.meta.fio}.pdf`);
 
     } catch (err) {
@@ -2348,7 +2246,6 @@ window.exportReportPDF = async function() {
         if(btn) { btn.innerText = "📄 Скачать PDF отчет"; btn.disabled = false; }
     }
 };
-
 function buildTablesFromCache(CACHE) {
     let brBody = [[ {text:'Категория', style:'th'}, {text:'Утв.1', style:'th'}, {text:'Утв.2', style:'th'}, {text:'Утв.3', style:'th'}, {text:'Сумма', style:'th'}, {text:'Статус', style:'th'} ]];
     CACHE.bratus.rows.forEach(r => {
@@ -2357,8 +2254,7 @@ function buildTablesFromCache(CACHE) {
             {text: txt(r.sum), bold:true, alignment:'center', fontSize:11}, {text: txt(r.status), fontSize:10}
         ]);
     });
-
-    const markers = ["ОжИд", "РбИд", "ОжРе", "РбРе", "ОжИд", "РбИд", "ОжРе", "РбРе", "ОжИд", "РбИд", "ОжРе", "РбРе", "Э", "Ф"];
+    const markers = ["ОжИд", "РбИд", "ОжРе", "РбРе", "ОжИд", "РбИд", "ОжРе", "РбРе", "ОжИд", "РбИд", "ОжРе", "РбРе","Э", "Ф"];
     let k1 = [[{text:'', bold:true}, ...[1,2,3,4,5,6,7].map(i=>({text:i, style:'th'}))]];
     let k2 = [[{text:'', bold:true}, ...[8,9,10,11,12,13,14].map(i=>({text:i, style:'th'}))]];
     ['a','b','c','d','e','f','g','h'].forEach((l, ridx) => {
@@ -2372,7 +2268,6 @@ function buildTablesFromCache(CACHE) {
     for(let i=0; i<7; i++) b1.push({text: markers[i], color:'red', fontSize:9, alignment:'center', bold:true});
     for(let i=7; i<14; i++) b2.push({text: markers[i], color:'red', fontSize:9, alignment:'center', bold:true});
     k1.push(b1); k2.push(b2);
-
         // 3. таблица 2
         let mp = [[ {text:'', border:[false,false,false,false]}, {text:'П',style:'th'}, {text:'К',style:'th'}, {text:'С',style:'th'}, {text:'О',style:'th'}, {text:'Д',style:'th'}, {text:'ДР',style:'th'}, {text:'ОД',style:'th'}, {text:'Э',style:'th'}, {text:'Ф',style:'th'} ]];
     const s = CACHE.milman.scores;
@@ -2419,7 +2314,6 @@ function buildTablesFromCache(CACHE) {
 
     return { bratus: brBody, milmanKey1: k1, milmanKey2: k2, milmanProfile: mp, ipl: iplT };
 }
-
 // ГЕНЕРАТОР ГРАФИКОВ (HI-RES с МАСШТАБИРОВАНИЕМ)
 function generateChart(config, w, h, scale = 2) {
     return new Promise(resolve => {
@@ -2427,20 +2321,16 @@ function generateChart(config, w, h, scale = 2) {
         // Физический размер увеличиваем в SCALE раз
         cvs.width = w * scale; 
         cvs.height = h * scale; 
-        
         const ctx = cvs.getContext('2d');
         const cfg = JSON.parse(JSON.stringify(config));
-        
         // Фон
         cfg.plugins = config.plugins || [];
         cfg.plugins.unshift({ id:'bg', beforeDraw:(c)=>{ const x=c.canvas.getContext('2d'); x.save(); x.globalCompositeOperation='destination-over'; x.fillStyle='white'; x.fillRect(0,0,c.width,c.height); x.restore(); } });
-        
         // Отключаем devicePixelRatio (он вызывает глюки в headless), но размер Canvas уже большой!
         cfg.options = cfg.options || {}; 
         cfg.options.animation = false; 
         cfg.options.responsive = false;
         cfg.options.devicePixelRatio = 1; // Принудительно 1, чтобы Chart.js рисовал пиксель в пиксель
-
         try { 
             const chart = new Chart(ctx, cfg); 
             setTimeout(() => { 
@@ -2467,7 +2357,6 @@ function getImageDataUrl(url) {
         img.src = url;
     });
 }
-
 </script>
 </body>
 </html>
