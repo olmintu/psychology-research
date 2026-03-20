@@ -148,7 +148,7 @@
             /* Вопрос занимает все 100% ширины */
             td:first-child { flex: 0 0 100%; font-size: 0.95rem; border-bottom: none; padding-bottom: 10px; color: var(--primary); font-weight: 600; text-align: left; }
             /* Кнопки делят остаток поровну (flex: 1) и не смеют вылезать за края (min-width: 0) */
-            td:not(:first-child) { flex: 1 1 0; border: none; text-align: center; min-width: 0; }
+            td:not(:first-child) { flex: 1 1 0; border: none; text-align: center; min-width: 0; display: flex;flex-direction: column;justify-content: flex-end;align-items: center;}
             thead { display: none; } 
             /* Подписи над кнопками ("Когда как", "Нет") сжимаем аккуратно */
             td:not(:first-child)::before { content: attr(data-label); display: block; font-size: 0.8em; font-weight: 500; color: var(--text-muted); margin-bottom: 8px; line-height: 1.15; word-wrap: break-word; hyphens: auto; }
@@ -2384,7 +2384,7 @@ function getImageDataUrl(url) {
     });
 }
 </script>
-<button id="dev-autofill-btn" onclick="devAutoFill()" style="display:none; position:fixed; bottom:20px; right:20px; z-index:9999; background:#e74c3c; color:white; padding:12px 20px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+<button id="dev-autofill-btn" onclick="devAutoFill()" style="display:none; position:fixed; top:70px; right:15px; z-index:9999; background:#e74c3c; color:white; padding:12px 20px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
     🚀 DEV: Заполнить ответы
 </button>
 </body>
