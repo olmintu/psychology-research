@@ -14,8 +14,31 @@ function toggleTheme() {
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
     document.documentElement.setAttribute('data-theme', newTheme);
     localStorage.setItem('app_theme', newTheme);
-    
-    // Перерисовываем графики Мильмана, если они открыты, чтобы обновить цвет текста (сделаем это позже)
+    // Определяем цвета для осей и текста графиков в зависимости от темы
+    const textColor = newTheme === 'dark' ? '#f4f6f8' : '#333333';
+    const gridColor = newTheme === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+    // Перерисовываем графики , если они открыты, чтобы обновить цвет текста
+    // Перебираем все существующие инстансы Chart.js на странице и обновляем их
+    for (let id in Chart.instances) {
+        let chart = Chart.instances[id];
+        // Обновляем цвет текста легенды
+        if (chart.options.plugins && chart.options.plugins.legend) {
+            chart.options.plugins.legend.labels.color = textColor;
+        }
+        // Обновляем цвета осей X и Y
+        if (chart.options.scales) {
+            if (chart.options.scales.x) {
+                if (chart.options.scales.x.ticks) chart.options.scales.x.ticks.color = textColor;
+                if (chart.options.scales.x.grid) chart.options.scales.x.grid.color = gridColor;
+            }
+            if (chart.options.scales.y) {
+                if (chart.options.scales.y.ticks) chart.options.scales.y.ticks.color = textColor;
+                if (chart.options.scales.y.grid) chart.options.scales.y.grid.color = gridColor;
+            }
+        }
+        // Принудительно перерисовываем график с новыми настройками
+        chart.update();
+    }
 }
 function showSoftAskModal() {
 document.getElementById('soft-ask-modal').style.display = 'flex';
@@ -590,3 +613,34 @@ window.chartMilmanEmo = new Chart(ctxEmo.getContext("2d"), {
 });
 }
 }
+// Очистка предупреждающей подсветки при вводе данных (UX Soft Ask)
+const ageInput = document.getElementById('age');
+if (ageInput) {
+    ageInput.addEventListener('input', function() {
+        this.style.borderColor = 'var(--input-border)';
+    });
+}
+const genderSelect = document.getElementById('gender');
+if (genderSelect) {
+    genderSelect.addEventListener('change', function() {
+        this.style.borderColor = 'var(--input-border)';
+    });
+}
+// Очистка красной подсветки ошибок в основной анкете при вводе данных
+const requiredDemographicIds = ['fio','gender','age','is_kmns','family_status','children','is_working','has_secondary_edu','edu_status','university','speciality'];
+requiredDemographicIds.forEach(id => {
+    const field = document.getElementById(id);
+    if (field) {
+        // Событие 'input' срабатывает при вводе текста/цифр
+        field.addEventListener('input', function() {
+            this.style.borderColor = 'var(--input-border)';
+            this.classList.remove('highlight-error'); // На случай, если стиль задан классом
+        });
+        
+        // Событие 'change' срабатывает при выборе опции в селектах (пол, образование)
+        field.addEventListener('change', function() {
+            this.style.borderColor = 'var(--input-border)';
+            this.classList.remove('highlight-error');
+        });
+    }
+});
