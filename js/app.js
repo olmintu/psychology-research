@@ -644,3 +644,171 @@ requiredDemographicIds.forEach(id => {
         });
     }
 });
+// ==========================================
+// ИИ ЧАТ-БОТ (Логика и API)
+// ==========================================
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwySw2UaxF_fW7TZxvBkVnonfPM-5Kfa7jDRqelUNRqfSnSFyHzdZUwjiCtLp56kzD5/exec"; 
+
+function toggleAIChat() {
+    const win = document.getElementById('ai-chat-window');
+    win.classList.toggle('chat-hidden');
+}
+// Показать/скрыть окно информации об ИИ
+function toggleAIInfo() {
+    const popup = document.getElementById('ai-info-popup');
+    popup.classList.toggle('ai-popup-hidden');
+}
+function handleChatEnter(e) {
+    if (e.key === 'Enter') sendChatMessage();
+}
+
+// Функция форматирования Markdown от нейросети в HTML
+function formatAIText(text) {
+    // 1. Экранируем HTML теги для безопасности
+    let safeText = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    // 2. Жирный текст: **текст** -> <strong>текст</strong>
+    safeText = safeText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    // 3. Курсив: *текст* -> <em>текст</em>
+    safeText = safeText.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    return safeText;
+}
+
+// Управление отображением поля ввода по галочке
+function toggleAIInput() {
+    const isChecked = document.getElementById('ai-consent-checkbox').checked;
+    document.getElementById('ai-input-area').style.display = isChecked ? 'flex' : 'none';
+    document.getElementById('ai-consent-block').style.display = isChecked ? 'none' : 'block';
+    
+    if (isChecked) {
+        const container = document.getElementById('ai-chat-messages');
+        container.scrollTop = container.scrollHeight; // Скроллим вниз при открытии ввода
+    }
+}
+
+//  Добавление сообщений со смарт-скроллом
+function addChatMessage(sender, text, isTyping = false) {
+    const msgDiv = document.createElement('div');
+    msgDiv.className = `chat-msg ${sender} ${isTyping ? 'typing' : ''}`;
+    if (isTyping) msgDiv.id = 'typing-indicator';
+    
+    // Рендерим Markdown для бота, а для пользователя и индикатора оставляем обычный текст
+    if (sender === 'bot' && !isTyping) {
+        msgDiv.innerHTML = formatAIText(text);
+    } else {
+        msgDiv.textContent = text;
+    }
+    
+    const container = document.getElementById('ai-chat-messages');
+    container.appendChild(msgDiv);
+    
+    // УМНЫЙ СКРОЛЛ
+    if (sender === 'bot' && !isTyping) {
+        // Если ответил бот, плавно скроллим к НАЧАЛУ его сообщения
+        msgDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+        // Если пишет пользователь или висит "Анализирую...", скроллим в самый низ
+        container.scrollTop = container.scrollHeight;
+    }
+}
+
+let aiChatHistory = []; // Память  чата
+
+// Функция-парсер: собирает готовые результаты прямо со страницы  JSON + Словарь расшифровок для ИИ
+function extractProfileForBot() {
+    if (window.FULL_REPORT_CACHE && window.FULL_REPORT_CACHE.ready) {
+        
+        const botData = {
+            bratus: {
+                data: window.FULL_REPORT_CACHE.bratus.rows,
+                description: window.FULL_REPORT_CACHE.bratus.desc // Добавили текст Братуся
+            },
+            milman: {
+                scores: window.FULL_REPORT_CACHE.milman.scores, 
+                integral: window.FULL_REPORT_CACHE.milman.graphs.total_ideal,
+                motType: window.FULL_REPORT_CACHE.milman.motType, 
+                motDesc: window.FULL_REPORT_CACHE.milman.motDesc, // Добавили текст мотивации
+                emoType: window.FULL_REPORT_CACHE.milman.emoType,
+                emoDesc: window.FULL_REPORT_CACHE.milman.emoDesc  // Добавили текст эмоций
+            },
+            ipl: {
+                totalSum: window.FULL_REPORT_CACHE.ipl.sum,
+                level: window.FULL_REPORT_CACHE.ipl.level,
+                levelDesc: window.FULL_REPORT_CACHE.ipl.desc, // Добавили текст уровня
+                types: window.FULL_REPORT_CACHE.ipl.types, 
+                aspects: window.FULL_REPORT_CACHE.ipl.aspects, 
+                levels: window.FULL_REPORT_CACHE.ipl.levels, 
+                style: window.FULL_REPORT_CACHE.ipl.styleTitle,
+                styleDesc: window.FULL_REPORT_CACHE.ipl.styleDesc, // Добавили текст стиля
+                aspectDominance: window.FULL_REPORT_CACHE.ipl.domType,
+                aspectDesc: window.FULL_REPORT_CACHE.ipl.domDesc // Добавили текст аспектов
+            },
+            legend: {
+                milman_scales: "P - Жизнеобеспечение, K - Комфорт, S - Социальный статус, O - Общение, D - Общая активность, DR - Творческая активность, OD - Общественная польза.",
+                ipl_aspects: "G - Гносеологический (поиск), A - Аксиологический (оценка), P - Праксеологический (действие).",
+                ipl_types: "OI - Осмысленно-интенсивный, FN - Формально-накопительский, PD - Позитивно-дифференцированный, NG - Негативно-генерализованный, IP - Инициативно-преобразовательный, VP - Вынужденно-приспособительный."
+            }
+        };
+        
+        return JSON.stringify(botData);
+    }
+
+    // Запасной вариант (если кэша почему-то нет, собираем текст со страницы)
+    const resultsContainer = document.getElementById('step-results');
+    if (resultsContainer) {
+        return resultsContainer.textContent.replace(/\s+/g, ' ').trim().substring(0, 6000);
+    }
+    
+    return "Данные недоступны.";
+}
+
+// ОТПРАВКА с сохранением контекста беседы
+async function sendChatMessage() {
+    const input = document.getElementById('ai-chat-input');
+    const text = input.value.trim();
+    if (!text) return;
+
+    // 1. Показываем сообщение пользователя в UI
+    addChatMessage('user', text);
+    input.value = '';
+
+    // 2. ДОБАВЛЯЕМ В ПАМЯТЬ (Формат, который понимает Gemini)
+    aiChatHistory.push({ role: "user", parts: [{ text: text }] });
+
+    // 3. Показываем индикатор
+    addChatMessage('bot', 'Анализирую...', true);
+
+    const profileText = extractProfileForBot();
+
+    try {
+        const response = await fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
+            body: JSON.stringify({
+                profileData: profileText,
+                history: aiChatHistory // <-- ОТПРАВЛЯЕМ ВСЮ ИСТОРИЮ ЧАТА
+            })
+        });
+
+        const data = await response.json();
+        
+        const typing = document.getElementById('typing-indicator');
+        if (typing) typing.remove();
+
+        if (data.reply) {
+            addChatMessage('bot', data.reply);
+            // 4. СОХРАНЯЕМ ОТВЕТ БОТА В ПАМЯТЬ
+            aiChatHistory.push({ role: "model", parts: [{ text: data.reply }] });
+        } else {
+            // Если произошла ошибка, удаляем наше последнее сообщение из памяти, чтобы не сломать логику
+            aiChatHistory.pop(); 
+            addChatMessage('bot', 'Извините, произошла техническая ошибка: ' + (data.error || 'Нет ответа'));
+        }
+
+    } catch (error) {
+        const typing = document.getElementById('typing-indicator');
+        if (typing) typing.remove();
+        aiChatHistory.pop(); // Удаляем из памяти при сбое сети
+        addChatMessage('bot', 'Ошибка сети. Проверьте подключение к интернету.');
+        console.error('AI Chat Error:', error);
+    }
+}

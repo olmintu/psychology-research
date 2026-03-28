@@ -817,6 +817,12 @@ document.getElementById("detailsIPL").innerHTML = detailsHTML;
         }
         document.getElementById(sphere.elementId).innerHTML = `<div><b>Тип мотивационного профиля (${sphere.label}):</b> ${s_profileText}</div>`;
     });
+  // ---  кнопка ИИ-чата  ---
+  const aiBtn = document.getElementById('ai-chat-btn');
+  if (aiBtn) {
+      aiBtn.style.display = 'flex'; // Используем flex для центрирования иконки и текста
+  }
+  // --------------------------------------------------------------------------
 }
 // Утилиты
 function switchStep(f, t) { document.getElementById(f).classList.remove('active'); setTimeout(() => document.getElementById(t).classList.add('active'), 200); window.scrollTo(0,0); updateProgress(); }

@@ -317,5 +317,44 @@
 <button id="dev-autofill-btn" onclick="devAutoFill()" style="display:none; position:fixed; top:70px; right:15px; z-index:9999; background:#e74c3c; color:white; padding:12px 20px; border:none; border-radius:8px; font-weight:bold; cursor:pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
     🚀 DEV: Заполнить ответы
 </button>
+<button id="ai-chat-btn" onclick="toggleAIChat()" style="display: none;">
+    <span class="ai-icon">💬</span>
+    <span class="ai-text" style="margin-left: 8px;">Обсудить с ИИ</span>
+</button>
+
+<div id="ai-chat-window" class="chat-hidden">
+    <div class="chat-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <span>🧠 Психолог-ассистент</span>
+            <span id="ai-info-icon" onclick="toggleAIInfo()" title="Об ИИ">?</span>
+        </div>
+        <button onclick="toggleAIChat()" title="Закрыть">✖</button>
+    </div>
+
+    <div id="ai-info-popup" class="ai-popup-hidden">
+        <p style="margin-top: 0;">Ассистент работает на базе генеративной нейросети <strong>Google Gemini</strong>. Он обучен анализировать ваши обезличенные результаты и помогать интерпретировать их в рамках методологий данного исследования.</p>
+        <p style="margin-bottom: 0; margin-top: 12px; font-weight: bold; color: #e74c3c;">
+            Приведенная информация носит справочный характер. Если вам требуется медицинская консультация или постановка диагноза, обратитесь к специалисту.
+        </p>
+        <button onclick="toggleAIInfo()" class="ai-popup-close">Понятно</button>
+    </div>
+    
+    <div id="ai-chat-messages">
+        <div class="chat-msg bot">Здравствуйте! Я — ИИ-ассистент. Готов обсудить результаты вашего исследования и ответить на вопросы по сайту. Что вас интересует?</div>
+    </div>
+    
+    <div id="ai-consent-block" style="padding: 15px; background: var(--anon-bg); border-top: 1px solid var(--anon-border); font-size: 13px; color: var(--anon-text);">
+        <p style="margin: 0 0 10px 0;"><strong>⚠️ Важно:</strong> Для работы ИИ-ассистента ваши обезличенные результаты тестов будут отправлены на серверы нейросети. Данные не сохраняются и не привязываются к вашей личности.</p>
+        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-weight: bold;">
+            <input type="checkbox" id="ai-consent-checkbox" onchange="toggleAIInput()" style="width: 16px; height: 16px;"> 
+            Я ознакомлен(а) и согласен(на)
+        </label>
+    </div>
+
+    <div class="chat-input-area" id="ai-input-area" style="display: none;">
+        <input type="text" id="ai-chat-input" placeholder="Напишите сообщение..." onkeypress="handleChatEnter(event)">
+        <button onclick="sendChatMessage()" title="Отправить">➤</button>
+    </div>
+</div>
 </body>
 </html>
