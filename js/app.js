@@ -297,10 +297,22 @@ switchStep('step-form', 'step-bratus');
 renderBratus();
 }
 function renderBratus() {
-const c = document.getElementById('bratus-options'); c.innerHTML = "";
-document.getElementById('bratus-sub').innerHTML = `Выберите <b>3</b> утверждения для <b>${state.rank}-го места</b>`;
+    const c = document.getElementById('bratus-options'); 
+    c.innerHTML = "";
+    
+    // Считаем, сколько вариантов уже ушло, чтобы показать остаток
+    let usedCount = (state.rank - 1) * 3;
+    let remainingCount = 24 - usedCount;
 
-let used = []; 
+    // Добавляем счетчик оставшихся вариантов (компактно и без лишних блоков)
+    document.getElementById('bratus-sub').innerHTML = `
+        Выберите <b>3</b> утверждения для <b>${state.rank}-го места</b><br>
+        <span style="font-size: 0.85em; color: var(--text-muted); font-weight: normal;">
+            (осталось вариантов: ${remainingCount} из 24)
+        </span>
+    `;
+
+    let used = [];
 for(let k in state.bratus) if(parseInt(k) !== state.rank) used = used.concat(state.bratus[k]);
 
 bratus_stmts.forEach(s => {
