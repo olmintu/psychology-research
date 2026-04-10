@@ -250,7 +250,7 @@ def load_data(file):
     except Exception as e:
         st.error(f"Ошибка загрузки файла: {e}")
         return None
-
+@st.cache_data
 def get_descriptive_stats(df, columns):
     """Считает описательную статистику и нормальность распределения."""
     stats_list = []
@@ -282,7 +282,7 @@ def get_descriptive_stats(df, columns):
             "Нормальность (p)": f"{p_val:.3f} ({'Да' if is_normal else 'Нет'})"
         })
     return pd.DataFrame(stats_list)
-
+@st.cache_data
 def smart_compare_groups(df, group_col, metric_col):
     """
     Автоматически выбирает тест в зависимости от кол-ва групп и нормальности распределения.
@@ -352,7 +352,7 @@ def smart_compare_groups(df, group_col, metric_col):
         
     except Exception as e:
         return None, str(e)
-
+@st.cache_data
 def run_clustering_analysis(df, cols, n_clusters):
     """Выполняет PCA и K-Means кластеризацию."""
     data = df[cols].dropna()
@@ -381,6 +381,21 @@ def run_clustering_analysis(df, cols, n_clusters):
     
     return res_df
 
+@st.cache_data
+def calc_correlation_matrices(df_subset, method):
+    """Оптимизированный расчет матрицы корреляций и p-value."""
+    cols = df_subset.columns
+    r_matrix = df_subset.corr(method=method)
+    p_matrix = pd.DataFrame(np.ones((len(cols), len(cols))), columns=cols, index=cols)
+    
+    for i in range(len(cols)):
+        for j in range(i + 1, len(cols)):
+            res = pg.corr(df_subset[cols[i]], df_subset[cols[j]], method=method)
+            p_val = res['p-val'].values[0]
+            p_matrix.iloc[i, j] = p_val
+            p_matrix.iloc[j, i] = p_val 
+            
+    return r_matrix, p_matrix
 # ==========================================
 # 3. ИНТЕРФЕЙС И ЗАГРУЗКА
 # ==========================================
@@ -1279,7 +1294,7 @@ with tab4:
     
     # Логика кнопок для быстрого выбора шкал (Session State)
     if 'corr_sel' not in st.session_state:
-        st.session_state.corr_sel = num_cols[:8] if len(num_cols) > 8 else num_cols
+        st.session_state.corr_sel = []
 
     def add_prefix(prefix):
         current = st.session_state.corr_sel
@@ -1317,153 +1332,119 @@ with tab4:
         show_stars = st.checkbox("Показывать значимость (звездочки)", value=True)
     
     if len(corr_cols) > 1:
-        # --- БЛОК 1: РАСЧЕТ МАТРИЦЫ И P-VALUE ---
-        df_corr = df[corr_cols].dropna()
-        r_matrix = df_corr.corr(method=method)
-        p_matrix = pd.DataFrame(np.ones((len(corr_cols), len(corr_cols))), columns=corr_cols, index=corr_cols)
-        
-        for i in range(len(corr_cols)):
-            for j in range(i + 1, len(corr_cols)):
-                col_i, col_j = corr_cols[i], corr_cols[j]
-                res = pg.corr(df_corr[col_i], df_corr[col_j], method=method)
-                p_val = res['p-val'].values[0]
-                p_matrix.loc[col_i, col_j] = p_val
-                p_matrix.loc[col_j, col_i] = p_val 
-        
-        annot_matrix = np.empty_like(r_matrix, dtype=object)
-        hover_matrix = np.empty_like(r_matrix, dtype=object)
-        
-        for i in range(len(corr_cols)):
-            for j in range(len(corr_cols)):
-                r_val = r_matrix.iloc[i, j]
-                p_val = p_matrix.iloc[i, j]
+        # --- НОВАЯ ЛОГИКА: КНОПКА ЗАПУСКА ---
+        if st.button("🚀 Рассчитать матрицу корреляций", type="primary", use_container_width=True):
+            with st.spinner("Считаем корреляции..."):
+                df_corr = df[corr_cols].dropna()
+                # Вызываем оптимизированную функцию
+                r_matrix, p_matrix = calc_correlation_matrices(df_corr, method)
                 
-                stars = ""
-                if i != j: 
-                    if p_val < 0.001: stars = "***"
-                    elif p_val < 0.01: stars = "**"
-                    elif p_val < 0.05: stars = "*"
-                
-                annot_matrix[i, j] = f"{r_val:.2f}{stars}" if show_stars else f"{r_val:.2f}"
-                
-                # Текст для всплывающей подсказки (с полными названиями)
-                hover_matrix[i, j] = (
-                    f"<b>X:</b> {get_name(corr_cols[j])}<br>"
-                    f"<b>Y:</b> {get_name(corr_cols[i])}<br>"
-                    f"<b>r =</b> {r_val:.3f} {stars}<br>"
-                    f"<b>p-value =</b> {p_val:.4f}"
-                )
-        
-        # --- БЛОК 2: ИНТЕРАКТИВНАЯ ВИЗУАЛИЗАЦИЯ PLOTLY ---
-        # Переводим названия осей для матрицы
-        translated_cols = [get_name(c) for c in corr_cols]
-        
-        fig_corr = go.Figure(data=go.Heatmap(
-            z=r_matrix.values,
-            x=translated_cols,
-            y=translated_cols,
-            text=annot_matrix,               
-            texttemplate="%{text}",          
-            customdata=hover_matrix,         
-            hovertemplate="%{customdata}<extra></extra>", 
-            colorscale='RdBu_r',
-            zmin=-1, zmax=1
-        ))
-        
-        plot_height = max(600, len(corr_cols) * 35) # Адаптивная высота матрицы
-        
-        fig_corr.update_layout(
-            title=f"Матрица корреляций ({method.capitalize()})",
-            height=plot_height,
-            xaxis_tickangle=-45 
-        )
-        st.plotly_chart(fig_corr, use_container_width=True)
-        st.caption("**Как читать:** Красный = прямая связь, Синий = обратная. Значимость: * p < 0.05, ** p < 0.01, *** p < 0.001.")
-        
-        # --- БЛОК 3: ИНТЕРАКТИВНЫЙ ПОИСК СВЯЗЕЙ ---
-        st.markdown("---")
-        st.subheader("🔍 Автоматический поиск связей")
-        
-        filter_c1, filter_c2, filter_c3 = st.columns(3)
-        with filter_c1:
-            strength_preset = st.selectbox(
-                "Сила связи (|r|):",
-                ["Все значимые", "Слабая (0.1 - 0.3)", "Умеренная (0.3 - 0.5)", "Сильная (0.5 - 0.7)", "Очень сильная (> 0.7)", "Своё значение..."]
-            )
-            if strength_preset == "Своё значение...":
-                custom_r = st.number_input("Минимальный модуль |r|:", min_value=0.0, max_value=1.0, value=0.4, step=0.05)
-                min_r, max_r = custom_r, 1.0
-            elif strength_preset == "Слабая (0.1 - 0.3)": min_r, max_r = 0.1, 0.3
-            elif strength_preset == "Умеренная (0.3 - 0.5)": min_r, max_r = 0.3, 0.5
-            elif strength_preset == "Сильная (0.5 - 0.7)": min_r, max_r = 0.5, 0.7
-            elif strength_preset == "Очень сильная (> 0.7)": min_r, max_r = 0.7, 1.0
-            else: min_r, max_r = 0.0, 1.0
+                # Сохраняем результаты в оперативную память
+                st.session_state['corr_results'] = {
+                    'r_matrix': r_matrix,
+                    'p_matrix': p_matrix,
+                    'cols': corr_cols,
+                    'method': method
+                }
 
-        with filter_c2:
-            sig_level = st.selectbox(
-                "Уровень значимости (p):",
-                ["p < 0.05 (*)", "p < 0.01 (**)", "p < 0.001 (***)", "Показывать незначимые (p > 0.05)"]
-            )
-            if sig_level == "p < 0.05 (*)": p_thresh = 0.05
-            elif sig_level == "p < 0.01 (**)": p_thresh = 0.01
-            elif sig_level == "p < 0.001 (***)": p_thresh = 0.001
-            else: p_thresh = 1.0 
+        # --- ОТРИСОВКА (Только если результаты есть в памяти) ---
+        if 'corr_results' in st.session_state:
+            res = st.session_state['corr_results']
+            r_matrix = res['r_matrix']
+            p_matrix = res['p_matrix']
+            saved_cols = res['cols']
             
-        with filter_c3:
-            link_type = st.radio("Направление связи:", ["Все", "Прямая (r > 0)", "Обратная (r < 0)"])
-
-        links = []
-        for i in range(len(corr_cols)):
-            for j in range(i + 1, len(corr_cols)):
-                c1, c2 = corr_cols[i], corr_cols[j]
-                r = r_matrix.loc[c1, c2]
-                p = p_matrix.loc[c1, c2]
-                
-                if abs(r) >= min_r and abs(r) <= max_r: 
-                    if (sig_level != "Показывать незначимые (p > 0.05)" and p < p_thresh) or \
-                       (sig_level == "Показывать незначимые (p > 0.05)" and p >= 0.05): 
-                        if link_type == "Все" or (link_type == "Прямая (r > 0)" and r > 0) or (link_type == "Обратная (r < 0)" and r < 0): 
-                            s = ""
-                            if p < 0.001: s = "***"
-                            elif p < 0.01: s = "**"
-                            elif p < 0.05: s = "*"
-                            
-                            links.append({
-                                'Показатель 1': get_name(c1),  # Сразу переводим
-                                'Показатель 2': get_name(c2),  # Сразу переводим
-                                'r': r,
-                                'p-value': p,
-                                'Значимость': s
-                            })
-                            
-        if not links:
-            st.info("По заданным фильтрам связей не найдено.")
-        else:
-            links_df = pd.DataFrame(links).sort_values(by='r', key=abs, ascending=False).reset_index(drop=True)
+            if saved_cols != corr_cols:
+                st.warning("⚠️ Вы изменили состав шкал. Нажмите кнопку 'Рассчитать матрицу', чтобы обновить данные.")
             
-            # --- НОВЫЙ КОД: КНОПКА СКАЧИВАНИЯ СВЯЗЕЙ (EXCEL) ---
-            col_l1, col_l2 = st.columns([1, 1])
-            with col_l1:
-                st.write(f"**Найдено связей: {len(links_df)}**")
-            with col_l2:
-                buffer_links = io.BytesIO()
-                links_df.to_excel(buffer_links, index=False, engine='openpyxl')
-                st.download_button(
-                    label="📥 Скачать таблицу связей (Excel)",
-                    data=buffer_links.getvalue(),
-                    file_name='correlation_links.xlsx',
-                    mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-                )
+            annot_matrix = np.empty_like(r_matrix, dtype=object)
+            hover_matrix = np.empty_like(r_matrix, dtype=object)
+            
+            for i in range(len(saved_cols)):
+                for j in range(len(saved_cols)):
+                    r_val = r_matrix.iloc[i, j]
+                    p_val = p_matrix.iloc[i, j]
+                    
+                    stars = ""
+                    if i != j: 
+                        if p_val < 0.001: stars = "***"
+                        elif p_val < 0.01: stars = "**"
+                        elif p_val < 0.05: stars = "*"
+                    
+                    annot_matrix[i, j] = f"{r_val:.2f}{stars}" if show_stars else f"{r_val:.2f}"
+                    hover_matrix[i, j] = (
+                        f"<b>X:</b> {get_name(saved_cols[j])}<br>"
+                        f"<b>Y:</b> {get_name(saved_cols[i])}<br>"
+                        f"<b>r =</b> {r_val:.3f} {stars}<br>"
+                        f"<b>p-value =</b> {p_val:.4f}"
+                    )
+            
+            translated_cols = [get_name(c) for c in saved_cols]
+            
+            fig_corr = go.Figure(data=go.Heatmap(
+                z=r_matrix.values, x=translated_cols, y=translated_cols,
+                text=annot_matrix, texttemplate="%{text}", customdata=hover_matrix,         
+                hovertemplate="%{customdata}<extra></extra>", colorscale='RdBu_r', zmin=-1, zmax=1
+            ))
+            
+            plot_height = max(600, len(saved_cols) * 35) 
+            fig_corr.update_layout(title=f"Матрица корреляций ({res['method'].capitalize()})", height=plot_height, xaxis_tickangle=-45)
+            st.plotly_chart(fig_corr, use_container_width=True)
+            st.caption("**Как читать:** Красный = прямая связь, Синий = обратная.")
+            
+            # --- ИНТЕРАКТИВНЫЙ ПОИСК СВЯЗЕЙ ---
             st.markdown("---")
-            # --- КОНЕЦ НОВОГО КОДА ---
+            st.subheader("🔍 Автоматический поиск связей")
             
-            for _, row in links_df.iterrows():
-                color_dot = "🔴" if row['r'] > 0 else "🔵"
-                st.markdown(
-                    f"{color_dot} **{row['Показатель 1']}** ↔ **{row['Показатель 2']}** "
-                    f"| `r = {row['r']:.2f}` {row['Значимость']} "
-                    f"*(p={row['p-value']:.3f})*"
+            filter_c1, filter_c2, filter_c3 = st.columns(3)
+            with filter_c1:
+                strength_preset = st.selectbox(
+                    "Сила связи (|r|):",
+                    ["Все значимые", "Слабая (0.1-0.3)", "Умеренная (0.3-0.5)", "Сильная (0.5-0.7)", "Очень сильная (>0.7)", "Своё значение..."]
                 )
+                if strength_preset == "Своё значение...":
+                    min_r, max_r = st.number_input("Минимальный модуль |r|:", 0.0, 1.0, 0.4, 0.05), 1.0
+                elif strength_preset == "Слабая (0.1-0.3)": min_r, max_r = 0.1, 0.3
+                elif strength_preset == "Умеренная (0.3-0.5)": min_r, max_r = 0.3, 0.5
+                elif strength_preset == "Сильная (0.5-0.7)": min_r, max_r = 0.5, 0.7
+                elif strength_preset == "Очень сильная (>0.7)": min_r, max_r = 0.7, 1.0
+                else: min_r, max_r = 0.0, 1.0
+
+            with filter_c2:
+                sig_level = st.selectbox("Уровень значимости (p):", ["p < 0.05 (*)", "p < 0.01 (**)", "p < 0.001 (***)", "Показывать незначимые"])
+                if sig_level == "p < 0.05 (*)": p_thresh = 0.05
+                elif sig_level == "p < 0.01 (**)": p_thresh = 0.01
+                elif sig_level == "p < 0.001 (***)": p_thresh = 0.001
+                else: p_thresh = 1.0 
+                
+            with filter_c3:
+                link_type = st.radio("Направление связи:", ["Все", "Прямая (r > 0)", "Обратная (r < 0)"])
+
+            links = []
+            for i in range(len(saved_cols)):
+                for j in range(i + 1, len(saved_cols)):
+                    c1, c2 = saved_cols[i], saved_cols[j]
+                    r, p = r_matrix.loc[c1, c2], p_matrix.loc[c1, c2]
+                    
+                    if min_r <= abs(r) <= max_r and (sig_level == "Показывать незначимые" or p < p_thresh):
+                        if link_type == "Все" or (link_type == "Прямая (r > 0)" and r > 0) or (link_type == "Обратная (r < 0)" and r < 0): 
+                            s = "***" if p < 0.001 else ("**" if p < 0.01 else ("*" if p < 0.05 else ""))
+                            links.append({'Показатель 1': get_name(c1), 'Показатель 2': get_name(c2), 'r': r, 'p-value': p, 'Значимость': s})
+                                
+            if not links:
+                st.info("По заданным фильтрам связей не найдено.")
+            else:
+                links_df = pd.DataFrame(links).sort_values(by='r', key=abs, ascending=False).reset_index(drop=True)
+                col_l1, col_l2 = st.columns([1, 1])
+                with col_l1: st.write(f"**Найдено связей: {len(links_df)}**")
+                with col_l2:
+                    buffer_links = io.BytesIO()
+                    links_df.to_excel(buffer_links, index=False, engine='openpyxl')
+                    st.download_button("📥 Скачать таблицу (Excel)", buffer_links.getvalue(), 'links.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                st.markdown("---")
+                for _, row in links_df.iterrows():
+                    color_dot = "🔴" if row['r'] > 0 else "🔵"
+                    st.markdown(f"{color_dot} **{row['Показатель 1']}** ↔ **{row['Показатель 2']}** | `r = {row['r']:.2f}` {row['Значимость']} *(p={row['p-value']:.3f})*")
 
 # === TAB 5: КЛАСТЕРНЫЙ АНАЛИЗ (Step 3 part 2) ===
 with tab5:
@@ -1473,9 +1454,9 @@ with tab5:
     # --- ЛОГИКА КНОПОК БЫСТРОГО ВЫБОРА ---
     # Инициализация состояния для двух разных полей (HC и KM)
     if 'hc_sel' not in st.session_state:
-        st.session_state.hc_sel = num_cols[:6] if len(num_cols)>6 else num_cols
+        st.session_state.hc_sel = []
     if 'km_sel' not in st.session_state:
-        st.session_state.km_sel = num_cols[:4] if len(num_cols)>4 else num_cols
+        st.session_state.hc_sel = []
 
     # Универсальная функция добавления префикса
     def add_to_state(state_key, prefix):
@@ -1839,7 +1820,7 @@ with tab7:
         st.markdown("**⚡ Быстрый выбор методик-предикторов:**")
         cb1, cb2, cb3 = st.columns(3)
         with cb1:
-            sel_b = st.checkbox("Шкалы Братуся", value=True)
+            sel_b = st.checkbox("Шкалы Братуся", value=False)
         with cb2:
             sel_m = st.checkbox("Шкалы Мильмана", value=False)
         with cb3:
@@ -2102,9 +2083,9 @@ with tab8:
     st.markdown("**1. Выберите шкалы для анализа на аномалии:**")
     cb_a1, cb_a2, cb_a3 = st.columns(3)
     with cb_a1: 
-        sel_a_b = st.checkbox("Шкалы Братуся (Аномалии)", value=True)
+        sel_a_b = st.checkbox("Шкалы Братуся (Аномалии)", value=False)
     with cb_a2: 
-        sel_a_m = st.checkbox("Шкалы Мильмана (Аномалии)", value=True)
+        sel_a_m = st.checkbox("Шкалы Мильмана (Аномалии)", value=False)
     with cb_a3: 
         sel_a_ipl = st.checkbox("Шкалы ИПЛ (Аномалии)", value=False)
     
@@ -2283,9 +2264,9 @@ with tab9:
         st.markdown("**1. Выберите шкалы для построения сети:**")
         cb_n1, cb_n2, cb_n3 = st.columns(3)
         with cb_n1: 
-            sel_n_b = st.checkbox("Шкалы Братуся (Сеть)", value=True)
+            sel_n_b = st.checkbox("Шкалы Братуся (Сеть)", value=False)
         with cb_n2: 
-            sel_n_m = st.checkbox("Шкалы Мильмана (Сеть)", value=True)
+            sel_n_m = st.checkbox("Шкалы Мильмана (Сеть)", value=False)
         with cb_n3: 
             sel_n_ipl = st.checkbox("Шкалы ИПЛ (Сеть)", value=False)
             
