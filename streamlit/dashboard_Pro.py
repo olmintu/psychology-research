@@ -11,7 +11,6 @@ from sklearn.ensemble import RandomForestRegressor, IsolationForest
 from sklearn.metrics import r2_score
 import networkx as nx
 import io
-# !!!ЗАПУСК: streamlit run dashboard_Pro.py
 # ==========================================
 # МОДУЛЬ СПРАВКИ (Всплывающее окно)
 # ==========================================
@@ -461,7 +460,7 @@ with st.sidebar:
             for col, label in extra_cols.items():
                 if col in df_raw.columns:
                     options = sorted(df_raw[col].dropna().astype(str).unique().tolist())
-                    sel_extra[col] = st.multiselect(label, options, default=options)
+                    sel_extra[col] = st.multiselect(label, options, default=[])
                 else:
                     sel_extra[col] = [] # Если колонки нет в Excel, фильтр просто не сработает
         submit = st.form_submit_button("Применить фильтры")
