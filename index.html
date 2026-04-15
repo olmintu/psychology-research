@@ -8,6 +8,8 @@
     <!-- PDFMake для генерации PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- styles.css -->
     <link rel="stylesheet" href="css/styles.css">
 
@@ -213,6 +215,19 @@
                 <textarea id="result-area" readonly></textarea>
                 <p id="copy-msg" style="color:var(--success); display:none; font-weight:bold; margin-top:5px; text-align:center;">Скопировано!</p>
             </details>
+            <div style="margin-top: 30px; text-align: center; font-size: 0.9em; color: var(--text-muted); line-height: 1.5;">
+                Если у вас есть пожелания по функционалу интерфейса или вы хотите разработать похожую систему для своих исследовательских задач:<br>
+                <div style="margin-top: 8px; display: flex; justify-content: center; gap: 20px;">
+                    <a href="https://t.me/Ol_Mi" target="_blank" style="color: var(--text-muted); text-decoration: none; font-weight: 600; transition: color 0.2s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text-muted)'">
+                        <i class="fa-brands fa-telegram"></i> Telegram
+                    </a>
+                    <span class="copy-email" onclick="copyEmailToClipboard('olmi.works@gmail.com')" style="color: var(--text-muted); font-weight: 600; display: inline-block;">
+                        <i class="fa-solid fa-envelope"></i> Email
+                        <span class="copy-tooltip" style="bottom: 150%;">Скопировано!</span>
+                    </span>
+                </div>
+            </div>
+
         </div>
         <h2 style="margin-top:40px;">📊 Интерпретация результатов</h2>
         <div style="background:var(--anon-bg); border:1px solid var(--anon-border); color:var(--anon-text); padding:15px; border-radius:8px; margin-bottom:25px; font-size:0.95em; line-height:1.6; transition: all 0.3s;">
@@ -355,6 +370,19 @@
         <input type="text" id="ai-chat-input" placeholder="Напишите сообщение..." onkeypress="handleChatEnter(event)">
         <button onclick="sendChatMessage()" title="Отправить">➤</button>
     </div>
+</div>
+</div> <div class="site-footer">
+    &copy; 2026. Разработка психодиагностических систем и дашбордов. <br>
+    Связаться с разработчиком: 
+    <a href="https://t.me/Ol_Mi" target="_blank" title="Написать в Telegram">
+        <i class="fa-brands fa-telegram"></i> @Ol_Mi
+    </a> 
+    <span style="margin: 0 10px; color: var(--border);">|</span>
+    <span class="copy-email" onclick="copyEmailToClipboard('olmi.works@gmail.com')" title="Нажмите, чтобы скопировать почту">
+        <i class="fa-solid fa-envelope"></i> olmi.works@gmail.com
+        <span class="copy-tooltip">Скопировано!</span>
+    </span>
+</div>
 </div>
 </body>
 </html>

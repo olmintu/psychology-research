@@ -448,3 +448,70 @@
 .ai-popup-close:hover {
     background: var(--success);
 }
+/* ========================================= */
+/* КОНТАКТЫ РАЗРАБОТЧИКА (FOOTER)            */
+/* ========================================= */
+.site-footer {
+    text-align: center;
+    padding: 15px;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+.site-footer a {
+    color: var(--primary);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+.site-footer a:hover {
+    color: var(--success);
+    text-decoration: underline;
+}
+
+/* Стили для интерактивной почты (Копирование) */
+.copy-email {
+    color: var(--primary);
+    cursor: pointer;
+    position: relative;
+    transition: color 0.2s;
+    display: inline-block;
+}
+.copy-email:hover {
+    color: var(--success);
+    text-decoration: underline;
+}
+.copy-tooltip {
+    visibility: hidden;
+    background-color: var(--success);
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 4px 8px;
+    position: absolute;
+    z-index: 1;
+    bottom: 130%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 11px;
+    white-space: nowrap;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    pointer-events: none;
+}
+/* Хвостик для подсказки */
+.copy-tooltip::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: var(--success) transparent transparent transparent;
+}
+.copy-email.show-tooltip .copy-tooltip {
+    visibility: visible;
+    opacity: 1;
+}
