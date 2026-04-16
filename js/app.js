@@ -827,20 +827,19 @@ async function sendChatMessage() {
 // ==========================================
 // ФУНКЦИЯ КОПИРОВАНИЯ EMAIL В БУФЕР
 // ==========================================
-function copyEmailToClipboard(email) {
+function copyEmailToClipboard(email, element) {
     // Используем современный API буфера обмена
     navigator.clipboard.writeText(email).then(() => {
-        const emailElement = document.querySelector('.copy-email');
-        // Показываем зеленую плашку "Скопировано!"
-        emailElement.classList.add('show-tooltip');
+        // Добавляем класс конкретному элементу, на который кликнули
+        element.classList.add('show-tooltip');
         
         // Прячем её обратно через 2 секунды
         setTimeout(() => {
-            emailElement.classList.remove('show-tooltip');
+            element.classList.remove('show-tooltip');
         }, 2000);
     }).catch(err => {
         console.error('Ошибка копирования: ', err);
-        // Если браузер заблокировал копирование, используем старый mailto как запасной вариант
+        // Если браузер заблокировал копирование
         window.location.href = `mailto:${email}`;
     });
 }
