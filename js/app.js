@@ -201,12 +201,19 @@ try {
 }
 }
 // --- ЛОГИКА ---
+function toggleConsent() {
+// Снимаем красную подсветку, как только пользователь дал согласие
+if (document.getElementById('consent_check').checked) {
+    document.getElementById('consent_block').classList.remove('consent-error-state');
+    document.getElementById('consent-error').style.display = 'none';
+}
+}
 function toggleAnon() {
 anonMode = document.getElementById('anon_mode').checked;
 state.meta.mode = anonMode ? 'anon' : 'normal';
 document.getElementById('anon_warning').style.display = anonMode ? 'block' : 'none';
 document.querySelectorAll('.req').forEach(el => el.style.display = anonMode ? 'none' : 'inline');
-const inputs = document.querySelectorAll('#step-form input:not(#anon_mode), #step-form select');
+const inputs = document.querySelectorAll('#step-form input:not(#anon_mode):not(#consent_check), #step-form select');
 inputs.forEach(el => el.style.backgroundColor = anonMode ? 'var(--bg)' : 'var(--input-bg)');
 saveStateToLocal();
 }
@@ -230,6 +237,16 @@ let rawFio = document.getElementById('fio');
 if (rawFio && rawFio.value.toLowerCase().trim() === 'dev') {
     const devBtn = document.getElementById('dev-autofill-btn');
     if(devBtn) devBtn.style.display = 'block';
+}
+// 0. ПРОВЕРКА СОГЛАСИЯ (обязательна в любом режиме, включая анонимный)
+if (!document.getElementById('consent_check').checked) {
+    const block = document.getElementById('consent_block');
+    block.classList.remove('consent-error-state');
+    void block.offsetWidth; // Перезапуск анимации "shake" при повторных кликах
+    block.classList.add('consent-error-state');
+    document.getElementById('consent-error').style.display = 'block';
+    block.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return; // Не пускаем дальше без согласия
 }
 // 1. Формируем список актуальных полей в зависимости от статуса обучения
 let ids = ['fio','gender','age','is_kmns','family_status','children','is_working','has_secondary_edu','edu_status'];

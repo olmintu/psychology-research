@@ -131,6 +131,14 @@
             </div>
             <div class="form-group" id="course_block"><label>Курс: <span class="req">*</span></label><select id="course" onchange="saveStateToLocal()"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option></select></div>
         </div>
+        <!-- СОГЛАСИЕ НА ОБРАБОТКУ ДАННЫХ -->
+        <div class="consent-block" id="consent_block">
+            <input type="checkbox" id="consent_check" onchange="toggleConsent()">
+            <label for="consent_check">
+                Я добровольно соглашаюсь на участие в исследовании и даю согласие на обработку предоставленных мной данных. Данные используются исключительно в научных целях, в обобщённом и обезличенном виде. <span class="consent-req">*</span>
+            </label>
+        </div>
+        <div class="error-msg" id="consent-error" style="margin-top:10px;">Для участия в исследовании необходимо дать согласие на обработку данных</div>
         <div class="error-msg" id="form-error">Заполните обязательные поля или включите Анонимный режим!</div>
         <button class="btn btn-next" onclick="validateForm()">Начать исследование</button>
     </div>

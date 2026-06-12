@@ -53,6 +53,16 @@
         .anon-switch { background: var(--anon-bg); border: 1px solid var(--anon-border); padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; align-items: flex-start; gap: 10px; transition: all 0.3s; }
         .anon-switch input { width: 20px; height: 20px; margin-top: 3px; }
         .anon-warning { font-size: 0.85em; color: var(--anon-text); margin-top: 5px; display: none; transition: color 0.3s; }
+
+        /* --- БЛОК СОГЛАСИЯ НА ОБРАБОТКУ ДАННЫХ --- */
+        .consent-block { background: var(--input-bg); border: 1px solid var(--input-border); padding: 15px; border-radius: 8px; margin-top: 25px; margin-bottom: 25px; display: flex; align-items: flex-start; gap: 10px; transition: border-color 0.3s, background-color 0.3s, box-shadow 0.3s; }
+        .consent-block input { width: 20px; height: 20px; margin-top: 2px; flex-shrink: 0; cursor: pointer; accent-color: var(--primary); }
+        .consent-block label { margin: 0; cursor: pointer; font-size: 0.9em; color: var(--text-main); line-height: 1.5; transition: color 0.3s; user-select: none; }
+        .consent-req { color: var(--error); font-weight: bold; }
+        /* Состояние "попытались начать без согласия" — красная подсветка */
+        .consent-block.consent-error-state { border: 2px solid var(--error); background-color: rgba(231, 76, 60, 0.08); box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.15); animation: consent-shake 0.4s ease; }
+        .consent-block.consent-error-state label { color: var(--error); }
+        @keyframes consent-shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-6px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(4px); } }
         
         .step { display: none; opacity: 0; transition: opacity 0.3s ease; }
         .step.active { display: block; opacity: 1; }
